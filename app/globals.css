@@ -20,7 +20,15 @@ button,a { -webkit-tap-highlight-color:transparent; }
 .top-actions>a:hover { color:#08100f; background:var(--mint); border-color:var(--mint); transform:translateY(-2px); }
 .availability { font-size:9px; letter-spacing:.16em; color:#c7c7d7; margin-right:10px; }
 .availability i { display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--mint); box-shadow:0 0 12px var(--mint); margin-right:8px; }
+.mode-switcher { position:absolute; left:50%; transform:translateX(-50%); display:flex; align-items:center; height:100%; }
+.mode-switcher button { height:100%; padding:0 18px; color:#6f6f84; background:transparent; border:0; border-bottom:2px solid transparent; font-size:9px; letter-spacing:.14em; cursor:pointer; transition:.22s ease; }
+.mode-switcher button span { color:#48485d; margin-right:7px; font-size:8px; }
+.mode-switcher button:hover { color:#d6d6e6; }
+.mode-switcher button.active { color:white; border-bottom-color:var(--mint); background:linear-gradient(to top,rgba(120,255,228,.1),transparent 60%); }
+.mode-switcher button.active span { color:var(--mint); }
 .game-stage { position:relative; height:calc(100svh - 44px); min-height:680px; overflow:hidden; }
+.mode-garden { --violet:#49d990; --mint:#a1ff91; }
+.mode-kitchen { --violet:#ff7857; --mint:#ffd166; }
 .scene-layer { position:absolute; inset:0; z-index:1; }
 .scene-layer canvas { touch-action:none; }
 .stage-gradient { position:absolute; inset:0; z-index:2; pointer-events:none; background:radial-gradient(circle at 58% 45%,transparent 0 35%,rgba(6,6,19,.15) 58%,rgba(6,6,19,.74) 100%),linear-gradient(90deg,rgba(6,6,19,.72),transparent 39% 72%,rgba(6,6,19,.42)); }
@@ -46,11 +54,18 @@ button,a { -webkit-tap-highlight-color:transparent; }
 .game-controls>div { height:48px; display:flex; align-items:center; gap:10px; padding:0 14px; color:#77778d; background:rgba(9,9,26,.65); border:1px solid rgba(255,255,255,.1); }
 .game-controls span { font-size:7px; line-height:1.4; letter-spacing:.12em; }
 .game-controls b { color:#babacd; font-weight:500; }
+.game-controls button.action-control { width:76px; padding:0 10px; color:#0b1010; background:var(--mint); border-color:var(--mint); font-size:8px; font-weight:800; letter-spacing:.13em; }
+.game-controls button.action-control:hover { color:#09090f; background:white; border-color:white; }
+.quest-card { position:absolute; z-index:8; right:4vw; top:29%; width:170px; padding:15px 16px; display:flex; flex-direction:column; gap:5px; background:rgba(9,9,26,.62); border:1px solid rgba(255,255,255,.1); border-right:2px solid var(--mint); backdrop-filter:blur(14px); text-align:right; }
+.quest-card span { color:#77778e; font-size:8px; letter-spacing:.16em; }
+.quest-card b { color:white; font-size:25px; letter-spacing:-.04em; }
+.quest-card small { color:var(--mint); font-size:8px; letter-spacing:.07em; }
+.quest-card button { align-self:flex-end; margin-top:5px; padding:4px 0; color:#8e8ea3; background:transparent; border:0; border-bottom:1px solid #5e5e73; font-size:7px; letter-spacing:.16em; cursor:pointer; }
 .sector-label { position:absolute; right:4vw; top:19%; z-index:5; text-align:right; pointer-events:none; }
 .sector-label span { display:block; color:#5e5e74; font-size:8px; letter-spacing:.2em; }
 .sector-label b { display:block; margin-top:6px; font-size:10px; letter-spacing:.16em; color:#b7b7cc; }
 .statusbar { height:44px; display:flex; align-items:center; justify-content:space-between; padding:0 4vw; position:fixed; left:0; right:0; bottom:0; z-index:30; background:#09091a; border-top:1px solid rgba(255,255,255,.09); color:#65657a; font-size:8px; letter-spacing:.15em; }
 .status-center { color:var(--mint); }
-@media (max-width:900px) { body{overflow:auto}.availability,.sector-label{display:none}.game-stage{min-height:760px;height:calc(100svh - 40px)}.stage-gradient{background:linear-gradient(to bottom,rgba(6,6,19,.42),transparent 36%,rgba(6,6,19,.9) 74%)}.intro-copy{width:auto;left:22px;right:22px;top:118px}.intro-copy h1{font-size:clamp(54px,17vw,92px)}.intro-copy p{margin-top:20px;width:290px}.project-dock{left:18px;right:18px;bottom:84px;width:auto;min-height:0;grid-template-columns:44px 1fr;gap:12px;padding:17px}.dock-index{font-size:20px}.dock-content h2{font-size:22px}.dock-content p{font-size:10px;margin:9px 0 12px}.launch-link{grid-column:2;justify-self:start;padding:8px 0}.game-controls{right:18px;bottom:26px}.game-controls>div{display:none}.statusbar{display:none} }
-@media (max-width:560px) { .topbar{padding:0 18px;height:66px}.brand small{display:none}.brand b{font-size:10px}.top-actions>a{width:34px;height:34px}.intro-copy{top:98px}.intro-copy p{font-size:11px}.scene-layer{inset:90px -240px 150px -210px}.project-dock{bottom:82px}.dock-content p{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.stack-row span:nth-child(n+4){display:none} }
+@media (max-width:900px) { body{overflow:auto}.availability,.sector-label{display:none}.topbar{height:66px}.mode-switcher{position:fixed;top:66px;left:0;right:0;transform:none;height:44px;justify-content:center;background:rgba(8,8,24,.88);border-bottom:1px solid rgba(255,255,255,.1);backdrop-filter:blur(14px)}.mode-switcher button{height:44px;flex:1;max-width:140px;padding:0 8px}.game-stage{min-height:760px;height:calc(100svh - 40px)}.stage-gradient{background:linear-gradient(to bottom,rgba(6,6,19,.48),transparent 39%,rgba(6,6,19,.91) 73%)}.intro-copy{width:auto;left:22px;right:22px;top:160px}.intro-copy h1{font-size:clamp(54px,17vw,92px)}.intro-copy p{margin-top:18px;width:290px}.project-dock{left:18px;right:18px;bottom:84px;width:auto;min-height:0;grid-template-columns:44px 1fr;gap:12px;padding:17px}.dock-index{font-size:20px}.dock-content h2{font-size:22px}.dock-content p{font-size:10px;margin:9px 0 12px}.launch-link{grid-column:2;justify-self:start;padding:8px 0}.game-controls{right:18px;bottom:26px}.game-controls>div{display:none}.quest-card{top:120px;right:18px;width:auto;padding:8px 10px;flex-direction:row;align-items:center;gap:7px}.quest-card span{font-size:7px}.quest-card b{font-size:14px}.quest-card small{display:none}.quest-card button{margin:0;padding:3px 0}.statusbar{display:none} }
+@media (max-width:560px) { .topbar{padding:0 18px}.brand small{display:none}.brand b{font-size:10px}.top-actions>a{width:34px;height:34px}.intro-copy{top:160px}.intro-copy p{font-size:11px}.scene-layer{inset:100px -240px 150px -210px}.mode-garden .scene-layer,.mode-kitchen .scene-layer{inset:120px -140px 145px -140px}.project-dock{bottom:82px}.dock-content p{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.stack-row span:nth-child(n+4){display:none} }
 @media (prefers-reduced-motion:reduce) { *,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important} }
