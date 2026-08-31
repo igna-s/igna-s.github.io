@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://igna-s.is-a.dev"),
   title: "Ignacio's Lab — Engineering, Served Fresh",
   description: "Jugá un turno en la cocina digital de Ignacio Schwindt: cada receta es un proyecto y cada ingrediente, una tecnología real.",
   other: { "codex-preview": "development" },
