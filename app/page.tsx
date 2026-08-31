@@ -1,346 +1,71 @@
 "use client";
 
 import {
-  ArrowRight,
-  Check,
-  ChefHat,
-  CircleAlert,
-  ClipboardList,
-  Clock3,
-  Contact,
-  Flame,
-  Gauge,
-  GitBranch,
-  Layers3,
-  RotateCcw,
-  Star,
-  Trash2,
-  Trophy,
-  Users,
-  UtensilsCrossed,
-  Volume2,
-  VolumeX,
-  X,
+  ArrowLeft, ArrowRight, Check, ChefHat, CircleHelp, Clock3, Contact, Flame, GitBranch,
+  Globe2, Languages, Minus, Pause, Play, Plus, RotateCcw, Scissors,
+  Settings, Sparkles, Star, Store, Thermometer, Trash2, Trophy, UserRound,
+  Volume2, VolumeX, X,
 } from "lucide-react";
-import type { CSSProperties } from "react";
-import { useEffect, useMemo, useState } from "react";
+import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
+import { useEffect, useMemo, useReducer, useRef, useState } from "react";
+import { DIFFICULTIES, INGREDIENTS, RECIPES, ingredientById, type DifficultyKey } from "@/lib/game-data";
+import { scoreOrder, type Cut, type Placement, type ScoreBreakdown } from "@/lib/game-engine";
 
-type Station = "lobby" | "prep" | "grill" | "build";
-type GameState = "intro" | "playing" | "served" | "failed" | "complete";
-type DifficultyKey = "rookie" | "pro" | "master";
+type Language = "es" | "en";
+type Screen = "home" | "game" | "portfolio";
+type Station = "reception" | "prep" | "oven" | "cut" | "result";
+type GameState = { screen:Screen; station:Station; language:Language; difficulty:DifficultyKey; recipeIndex:number; shiftScore:number; patience:number; sauce:number; cheese:number; selected:string|null; placements:Placement[]; temperature:number; cook:number; ovenActive:boolean; cuts:Cut[]; mistakes:number; result:ScoreBreakdown|null; sound:boolean };
+type Action =
+  | {type:"LANG";language:Language}|{type:"DIFFICULTY";difficulty:DifficultyKey}|{type:"SELECT_LEVEL";index:number}
+  | {type:"START"}|{type:"RESUME";state:GameState}|{type:"HOME"}|{type:"PORTFOLIO"}|{type:"TOGGLE_SOUND"}|{type:"ACCEPT"}
+  | {type:"ADD_SAUCE"}|{type:"ADD_CHEESE"}|{type:"SELECT_TOPPING";id:string}|{type:"PLACE";placement:Placement;correct:boolean}
+  | {type:"UNDO"}|{type:"BAKE"}|{type:"TEMP";amount:number}|{type:"TOGGLE_OVEN"}|{type:"TICK"}|{type:"TAKE_OUT"}
+  | {type:"ADD_CUT";cut:Cut}|{type:"AUTO_CUT"}|{type:"FINISH"}|{type:"NEXT"}|{type:"RESTART_ORDER"};
 
-type Ingredient = { name: string; short: string; note: string; color: string };
-type Project = {
-  name: string; type: string; description: string; detail: string;
-  ingredients: string[]; url: string; year: string;
+const SAVE_KEY="stack-and-slice-save-v2";
+const initialState:GameState={screen:"home",station:"reception",language:"es",difficulty:"service",recipeIndex:0,shiftScore:0,patience:DIFFICULTIES.service.patience,sauce:0,cheese:0,selected:null,placements:[],temperature:275,cook:0,ovenActive:false,cuts:[],mistakes:0,result:null,sound:true};
+
+function freshRound(state:GameState,index=state.recipeIndex):GameState{return{...state,screen:"game",station:"reception",recipeIndex:index,patience:DIFFICULTIES[state.difficulty].patience,sauce:0,cheese:0,selected:null,placements:[],temperature:275,cook:0,ovenActive:false,cuts:[],mistakes:0,result:null}}
+function reducer(state:GameState,action:Action):GameState{
+  const recipe=RECIPES[state.recipeIndex];
+  switch(action.type){
+    case"LANG":return{...state,language:action.language};case"DIFFICULTY":return{...state,difficulty:action.difficulty,patience:DIFFICULTIES[action.difficulty].patience};case"SELECT_LEVEL":return{...state,recipeIndex:action.index};case"START":return freshRound({...state,shiftScore:0});case"RESUME":return{...action.state,screen:"game"};case"HOME":return{...state,screen:"home"};case"PORTFOLIO":return{...state,screen:"portfolio"};case"TOGGLE_SOUND":return{...state,sound:!state.sound};case"ACCEPT":return{...state,station:"prep"};case"ADD_SAUCE":return{...state,sauce:Math.min(100,state.sauce+18)};case"ADD_CHEESE":return{...state,cheese:Math.min(100,state.cheese+17)};case"SELECT_TOPPING":return{...state,selected:action.id};case"PLACE":return{...state,placements:[...state.placements,action.placement].slice(-80),mistakes:state.mistakes+(action.correct?0:1)};case"UNDO":return{...state,placements:state.placements.slice(0,-1)};case"BAKE":return{...state,station:"oven",ovenActive:true};case"TEMP":return{...state,temperature:Math.max(190,Math.min(340,state.temperature+action.amount))};case"TOGGLE_OVEN":return{...state,ovenActive:!state.ovenActive};
+    case"TICK":{if(state.screen!=="game"||state.station==="result")return state;const drain=state.station==="reception"?0:state.difficulty==="rush"?.24:state.difficulty==="service"?.17:.11;const heat=state.ovenActive&&state.station==="oven"?Math.max(.1,(state.temperature-175)/100)*DIFFICULTIES[state.difficulty].ovenRate:0;return{...state,patience:Math.max(0,state.patience-drain),cook:Math.min(140,state.cook+heat)}}
+    case"TAKE_OUT":return{...state,station:"cut",ovenActive:false};case"ADD_CUT":return{...state,cuts:[...state.cuts,action.cut].slice(0,8)};case"AUTO_CUT":{const lines=Math.max(1,recipe.targetCuts/2);return{...state,cuts:Array.from({length:lines},(_,index)=>{const angle=Math.PI*index/lines;return{x1:50-Math.cos(angle)*47,y1:50-Math.sin(angle)*47,x2:50+Math.cos(angle)*47,y2:50+Math.sin(angle)*47}})}}
+    case"FINISH":{const result=scoreOrder({required:recipe.ingredientIds,placements:state.placements,sauce:state.sauce,cheese:state.cheese,cook:state.cook,cuts:state.cuts,targetCuts:recipe.targetCuts,patience:(state.patience/DIFFICULTIES[state.difficulty].patience)*100,mistakes:state.mistakes,multiplier:DIFFICULTIES[state.difficulty].multiplier});return{...state,station:"result",result,shiftScore:state.shiftScore+result.total}}
+    case"NEXT":return freshRound(state,(state.recipeIndex+1)%RECIPES.length);case"RESTART_ORDER":return freshRound(state);default:return state;
+  }
+}
+
+const copy={
+  es:{play:"Jugar turno",portfolio:"Portfolio rápido",resume:"Continuar partida",settings:"Ajustes",credits:"Créditos",selectLevel:"Elegí una receta inicial",selectPace:"Ritmo de servicio",premise:"Construyo el puente entre la lógica de alto nivel y las señales de bajo nivel.",homeNote:"Un portfolio que se entiende jugando.",reception:"Recepción",prep:"Preparación",oven:"Horno",cut:"Corte",order:"Comanda",queue:"en espera",patience:"Paciencia",accept:"Tomar pedido",requested:"El cliente pidió",sauce:"Salsa",cheese:"Queso",toppings:"Componentes / toppings",prepHelp:"Aplicá salsa y queso. Después elegí cada componente y colocá al menos 3 piezas bien distribuidas.",selected:"Topping seleccionado",undo:"Deshacer último",bake:"Enviar al horno",missing:"Completá cobertura y componentes",heat:"Temperatura",ovenHelp:"Controlá la temperatura y retirala cuando la cocción esté en la zona perfecta. Si te distraés, se quema.",pause:"Pausar horno",resumeOven:"Encender horno",remove:"Retirar pizza",raw:"Cruda",cooking:"Cocinando",perfect:"En su punto",burning:"¡Se quema!",burnt:"Quemada",cutHelp:"Arrastrá el cortador cruzando el centro. Hacé cortes parejos para obtener las porciones pedidas.",precise:"Corte accesible preciso",deliver:"Entregar proyecto",slices:"porciones",result:"Servicio completado",orderScore:"Pedido",distribution:"Distribución",bakeScore:"Cocción",cutScore:"Corte",service:"Servicio",next:"Siguiente cliente",openRepo:"Abrir proyecto real",restart:"Rehacer pedido",total:"Puntaje total",projects:"Proyectos seleccionados",stack:"Stack completo",back:"Volver al juego",viewCode:"Ver código",language:"Idioma",sound:"Sonido",made:"Diseño, arte y código originales",level:"Nivel"},
+  en:{play:"Start shift",portfolio:"Quick portfolio",resume:"Continue game",settings:"Settings",credits:"Credits",selectLevel:"Choose a starting recipe",selectPace:"Service pace",premise:"I bridge the gap between high-level logic and low-level signals.",homeNote:"A portfolio you understand by playing.",reception:"Front counter",prep:"Preparation",oven:"Oven",cut:"Cut",order:"Order ticket",queue:"waiting",patience:"Patience",accept:"Take order",requested:"The customer ordered",sauce:"Sauce",cheese:"Cheese",toppings:"Components / toppings",prepHelp:"Apply sauce and cheese. Then choose every component and place at least 3 pieces with good distribution.",selected:"Selected topping",undo:"Undo last",bake:"Send to oven",missing:"Complete coverage and components",heat:"Temperature",ovenHelp:"Control the heat and pull the pizza in the perfect zone. Leave it too long and it will burn.",pause:"Pause oven",resumeOven:"Start oven",remove:"Pull pizza",raw:"Raw",cooking:"Cooking",perfect:"Perfect",burning:"Burning!",burnt:"Burnt",cutHelp:"Drag the cutter across the center. Make even cuts for the requested number of slices.",precise:"Accessible precision cut",deliver:"Deliver project",slices:"slices",result:"Service complete",orderScore:"Order",distribution:"Distribution",bakeScore:"Bake",cutScore:"Cut",service:"Service",next:"Next customer",openRepo:"Open real project",restart:"Redo order",total:"Total score",projects:"Selected projects",stack:"Full stack",back:"Back to game",viewCode:"View code",language:"Language",sound:"Sound",made:"Original design, art and code",level:"Level"}
 };
-type Customer = { name: string; role: string; line: string };
-type GrillItem = { name: string; progress: number };
 
-const difficulties = {
-  rookie: { name: "APRENDIZ", subtitle: "Turno tranquilo", orderTime: 135, cookRate: 1.05, patienceDrain: .13, multiplier: 1 },
-  pro: { name: "SERVICIO PRO", subtitle: "Ritmo de restaurante", orderTime: 105, cookRate: 1.5, patienceDrain: .2, multiplier: 1.5 },
-  master: { name: "CHEF EJECUTIVO", subtitle: "Sin margen de error", orderTime: 80, cookRate: 2.15, patienceDrain: .29, multiplier: 2.25 },
-} as const;
+function avatarStyle(index:number):CSSProperties{return{backgroundPosition:`${(index%3)*50}% ${Math.floor(index/3)*100}%`}}
+function toppingStyle(point:Placement):CSSProperties{const item=ingredientById.get(point.id)!;return{left:`${point.x}%`,top:`${point.y}%`,transform:`translate(-50%,-50%) rotate(${point.rotation}deg)`,"--topping":item.color} as CSSProperties}
 
-const ingredients: Ingredient[] = [
-  { name:"LangGraph", short:"LG", note:"Agentes", color:"#ef7658" },
-  { name:"FastAPI", short:"FA", note:"Backend", color:"#49c3a8" },
-  { name:"React", short:"RE", note:"Frontend", color:"#62c9eb" },
-  { name:"PostgreSQL", short:"PG", note:"Datos", color:"#7897c8" },
-  { name:"Qiskit", short:"QK", note:"Quantum", color:"#947df4" },
-  { name:"Qdrant", short:"QD", note:"Vectores", color:"#e9687b" },
-  { name:"n8n", short:"N8", note:"Workflows", color:"#ef775f" },
-  { name:"Ollama", short:"OL", note:"Local AI", color:"#cab083" },
-  { name:"Gemini", short:"GE", note:"Multimodal", color:"#65a5f5" },
-  { name:"Three.js", short:"3D", note:"Web 3D", color:"#d5b66f" },
-  { name:"VRM", short:"VR", note:"Avatar", color:"#ca82d8" },
-  { name:"Web Audio", short:"WA", note:"Realtime", color:"#ef9c59" },
-  { name:"Python", short:"PY", note:"Core", color:"#e3b84a" },
-  { name:"Autograd", short:"AG", note:"Gradientes", color:"#df6b54" },
-  { name:"Backprop", short:"BP", note:"Learning", color:"#aa8de4" },
-  { name:"LLMs", short:"LL", note:"Language", color:"#79b784" },
-  { name:"Agents", short:"AI", note:"Planning", color:"#e67e55" },
-  { name:"MI300X", short:"MX", note:"Inference", color:"#e54e47" },
-  { name:"Serverless", short:"SV", note:"Cloud", color:"#91a7d1" },
-  { name:"Unity", short:"UN", note:"Engine", color:"#d4d6d9" },
-  { name:"C#", short:"C#", note:"Logic", color:"#a37bd5" },
-  { name:"ShaderLab", short:"SL", note:"Shaders", color:"#65b98f" },
-];
-
-const projects: Project[] = [
-  { name:"VaultMind AI", type:"AGENTE RAG BANCARIO", description:"Investigación financiera segura, trazable y multiagente.", detail:"Plataforma bancaria full-stack con investigación multiagente y recuperación semántica sobre documentos complejos.", ingredients:["LangGraph","FastAPI","React","PostgreSQL"], url:"https://github.com/igna-s/VaultMind-AI-RAG-Banking-Agent", year:"2026" },
-  { name:"Qiskit RAG Migration", type:"QUANTUM × AI", description:"Modernización de código cuántico con documentación y retrieval.", detail:"Pipeline RAG que entiende cambios entre versiones de Qiskit y propone migraciones concretas sobre código legado.", ingredients:["Qiskit","Qdrant","n8n","Ollama"], url:"https://github.com/igna-s/Qiskit-RAG-Migration-Assistant", year:"2025" },
-  { name:"Realtime AI Avatar", type:"LIVE AI EXPERIENCE", description:"Compañero 3D con voz y respuesta multimodal de baja latencia.", detail:"Experiencia voice-first con avatar VRM expresivo, escena 3D en tiempo real y modelos multimodales.", ingredients:["Gemini","Three.js","VRM","Web Audio"], url:"https://github.com/igna-s/Realtime_Avatar_AI_Companion", year:"2026" },
-  { name:"Michigrad Engine", type:"AI FROM SCRATCH", description:"Autograd escalar para mirar debajo del deep learning.", detail:"Diferenciación automática, backpropagation y fundamentos de modelos de lenguaje construidos desde cero.", ingredients:["Python","Autograd","Backprop","LLMs"], url:"https://github.com/igna-s/Michigrad-Deep-Learning-From-Scratch", year:"2025" },
-  { name:"Meridian AI Agent", type:"AMD HACKATHON", description:"Gestión de proyectos AI-first con inferencia acelerada.", detail:"Plataforma serverless de project management con agentes, experiencia React e inferencia AMD MI300X.", ingredients:["React","Agents","MI300X","Serverless"], url:"https://github.com/igna-s/Meridian-Ai-Agent", year:"2025" },
-  { name:"Unity VR Simulation", type:"IMMERSIVE SYSTEMS", description:"Simulación inmersiva creada para investigación en UNLP.", detail:"Entorno de realidad virtual interactivo con lógica C#, shaders propios y diseño de interacción espacial.", ingredients:["Unity","C#","VRM","ShaderLab"], url:"https://github.com/igna-s/Unity-VR-Simulation-2024", year:"2024" },
-];
-
-const customers: Customer[] = [
-  { name:"Valentina", role:"Product Lead", line:"Necesito algo inteligente, pero que pueda auditar cada respuesta." },
-  { name:"Bruno", role:"Quantum Dev", line:"Mi código quedó en una versión vieja. ¿Podés modernizarlo?" },
-  { name:"Mei", role:"Creative Technologist", line:"Quiero una experiencia que responda, hable y se sienta viva." },
-  { name:"Malik", role:"ML Engineer", line:"Servime los fundamentos, sin frameworks que oculten la magia." },
-  { name:"Tomás", role:"Startup Founder", line:"Tengo un equipo rápido. Necesito un agente que siga el ritmo." },
-  { name:"Elena", role:"Research Director", line:"Busco una simulación inmersiva lista para experimentar." },
-];
-
-const ingredientMap = new Map(ingredients.map((item) => [item.name, item]));
-
-function avatarStyle(index: number): CSSProperties {
-  const column = index % 3;
-  const row = Math.floor(index / 3);
-  return { backgroundPosition: `${column * 50}% ${row * 100}%` };
+function Pizza({placements,sauce,cheese,cook=0,cuts=[],onPlace,selected,mode="prep",onCutStart,onCutEnd}:{placements:Placement[];sauce:number;cheese:number;cook?:number;cuts?:Cut[];selected?:string|null;mode?:"prep"|"oven"|"cut";onPlace?:(x:number,y:number)=>void;onCutStart?:(x:number,y:number)=>void;onCutEnd?:(x:number,y:number)=>void}){
+  const ref=useRef<HTMLDivElement>(null);const coords=(event:ReactPointerEvent)=>{const rect=ref.current!.getBoundingClientRect();return{x:(event.clientX-rect.left)/rect.width*100,y:(event.clientY-rect.top)/rect.height*100}};
+  return <div className={`pizza-stage ${mode}`}><div ref={ref} className={`pizza ${cook>105?"overdone":""} ${selected?"is-placing":""}`} style={{"--sauce-alpha":sauce/100,"--cheese-alpha":cheese/100,"--bake":Math.min(1,cook/100)} as CSSProperties} onPointerDown={event=>{const p=coords(event);if(mode==="cut"){event.currentTarget.setPointerCapture(event.pointerId);onCutStart?.(p.x,p.y)}else if(mode==="prep"&&selected&&Math.hypot(p.x-50,p.y-50)<46)onPlace?.(p.x,p.y)}} onPointerUp={event=>{if(mode==="cut"){const p=coords(event);onCutEnd?.(p.x,p.y)}}} role="application" tabIndex={0} aria-label="Interactive pizza workspace" onKeyDown={event=>{if(event.key==="Enter"&&selected&&onPlace)onPlace(50+Math.cos(placements.length*2.3)*28,50+Math.sin(placements.length*2.3)*28)}}><div className="pizza-sauce"/><div className="pizza-cheese"/>{placements.map((point,index)=>{const item=ingredientById.get(point.id)!;return <span key={`${point.id}-${index}`} className={`topping topping-${item.category}`} style={toppingStyle(point)} title={item.name}><i>{item.glyph}</i></span>})}<div className="bake-shade"/>{cuts.map((cut,index)=><i key={index} className="cut-line" style={{left:`${cut.x1}%`,top:`${cut.y1}%`,width:`${Math.hypot(cut.x2-cut.x1,cut.y2-cut.y1)}%`,transform:`rotate(${Math.atan2(cut.y2-cut.y1,cut.x2-cut.x1)*180/Math.PI}deg)`}}/>)}</div></div>
 }
 
-function grillLabel(progress: number) {
-  if (progress < 35) return "CRUDO";
-  if (progress < 62) return "COCINANDO";
-  if (progress <= 105) return "EN SU PUNTO";
-  if (progress <= 122) return "¡RETIRAR YA!";
-  return "QUEMADO";
+function HomeScreen({state,dispatch,hasSave}:{state:GameState;dispatch:(a:Action)=>void;hasSave:boolean}){
+  const t=copy[state.language];const[panel,setPanel]=useState<"none"|"settings"|"credits">("none");const levels=[{index:0,number:"01",es:"Inteligencia aplicada",en:"Applied intelligence",icon:"AI"},{index:3,number:"02",es:"Sistemas desde cero",en:"Systems from scratch",icon:"SYS"},{index:5,number:"03",es:"Mundo físico",en:"Physical world",icon:"HW"}];
+  return <main className="title-screen"><div className="facade" aria-hidden="true"/><div className="title-shade" aria-hidden="true"/><header className="title-topbar"><span><ChefHat/> IGNACIO&apos;S DEV PIZZERIA</span><div className="lang-switch" aria-label={t.language}><button className={state.language==="es"?"active":""} onClick={()=>dispatch({type:"LANG",language:"es"})}>ES</button><button className={state.language==="en"?"active":""} onClick={()=>dispatch({type:"LANG",language:"en"})}>EN</button></div></header><section className="title-card"><div className="sign-logo"><small>IGNACIO&apos;S</small><h1>STACK <em>&amp;</em> SLICE</h1><span>DEV PIZZERIA · PORTFOLIO GAME</span></div><p className="premise">“{t.premise}”</p><p className="title-note">{t.homeNote}</p><div className="title-actions"><button className="button-primary" onClick={()=>dispatch({type:"START"})}><Play/>{t.play}<ArrowRight/></button>{hasSave&&<button onClick={()=>{const stored=localStorage.getItem(SAVE_KEY);if(stored)dispatch({type:"RESUME",state:JSON.parse(stored)})}}><Clock3/>{t.resume}</button>}<button onClick={()=>dispatch({type:"PORTFOLIO"})}><Sparkles/>{t.portfolio}</button><button onClick={()=>setPanel("settings")}><Settings/>{t.settings}</button></div></section><aside className="level-panel"><div className="panel-label"><span>{t.selectLevel}</span><b>{String(levels.findIndex(level=>level.index===state.recipeIndex)+1).padStart(2,"0")}/03</b></div><div className="level-list">{levels.map(level=><button key={level.index} className={state.recipeIndex===level.index?"active":""} onClick={()=>dispatch({type:"SELECT_LEVEL",index:level.index})}><span>{level.number}</span><i>{level.icon}</i><b>{state.language==="es"?level.es:level.en}</b><small>{RECIPES[level.index].project}</small><Check/></button>)}</div><div className="pace-label">{t.selectPace}</div><div className="pace-switch">{(Object.keys(DIFFICULTIES) as DifficultyKey[]).map(key=><button key={key} className={state.difficulty===key?"active":""} onClick={()=>dispatch({type:"DIFFICULTY",difficulty:key})}>{DIFFICULTIES[key].label}</button>)}</div><button className="credits-link" onClick={()=>setPanel("credits")}><CircleHelp/>{t.credits}</button></aside>{panel!=="none"&&<div className="modal-backdrop"><section className="small-modal"><button className="modal-close" onClick={()=>setPanel("none")} aria-label="Close"><X/></button>{panel==="settings"?<><span className="eyebrow">{t.settings}</span><h2>{state.language.toUpperCase()} / {state.sound?"SFX ON":"SFX OFF"}</h2><div className="setting-row"><Languages/><span>{t.language}</span><button onClick={()=>dispatch({type:"LANG",language:state.language==="es"?"en":"es"})}>{state.language==="es"?"English":"Español"}</button></div><div className="setting-row">{state.sound?<Volume2/>:<VolumeX/>}<span>{t.sound}</span><button onClick={()=>dispatch({type:"TOGGLE_SOUND"})}>{state.sound?"ON":"OFF"}</button></div></>:<><span className="eyebrow">{t.credits}</span><h2>Stack &amp; Slice</h2><p>{t.made}. Diseñado y desarrollado por Ignacio Schwindt.</p><a href="mailto:ignacio.schwindt.dev@gmail.com">ignacio.schwindt.dev@gmail.com</a></>}</section></div>}</main>
 }
 
-export default function Home() {
-  const [difficulty, setDifficulty] = useState<DifficultyKey>("pro");
-  const [gameState, setGameState] = useState<GameState>("intro");
-  const [station, setStation] = useState<Station>("lobby");
-  const [orderIndex, setOrderIndex] = useState(0);
-  const [accepted, setAccepted] = useState(false);
-  const [prep, setPrep] = useState<string[]>([]);
-  const [grills, setGrills] = useState<Array<GrillItem | null>>([null,null,null,null]);
-  const [cooked, setCooked] = useState<string[]>([]);
-  const [mistakes, setMistakes] = useState(0);
-  const [burnt, setBurnt] = useState(0);
-  const [score, setScore] = useState(0);
-  const [lastEarned, setLastEarned] = useState(0);
-  const [patience, setPatience] = useState(100);
-  const [timeLeft, setTimeLeft] = useState<number>(difficulties.pro.orderTime);
-  const [sound, setSound] = useState(true);
+function Portfolio({state,dispatch}:{state:GameState;dispatch:(a:Action)=>void}){const t=copy[state.language];return <main className="portfolio-screen"><header className="portfolio-header"><button onClick={()=>dispatch({type:"HOME"})}><ArrowLeft/>{t.back}</button><div><small>STACK &amp; SLICE</small><b>IGNACIO SCHWINDT · COMPUTER ENGINEER</b></div><div className="portfolio-social"><a href="https://github.com/igna-s"><GitBranch/></a><a href="https://www.linkedin.com/in/ignacio-andres-schwindt"><Contact/></a></div></header><section className="portfolio-hero"><span>QUICK PORTFOLIO / NO GAMEPLAY REQUIRED</span><h1>{t.projects}</h1><p>{t.premise}</p></section><section className="portfolio-grid">{RECIPES.map((recipe,index)=><article key={recipe.id}><div className="project-index">{String(index+1).padStart(2,"0")}<span>{recipe.year}</span></div><small>{state.language==="es"?recipe.subtitle:recipe.subtitleEn}</small><h2>{recipe.project}</h2><p>{state.language==="es"?recipe.description:recipe.descriptionEn}</p><div>{recipe.ingredientIds.map(id=><span key={id} style={{"--dot":ingredientById.get(id)!.color} as CSSProperties}>{ingredientById.get(id)!.name}</span>)}</div><a href={recipe.repo} target="_blank" rel="noreferrer">{t.viewCode}<ArrowRight/></a></article>)}</section><section className="stack-marquee"><span>{t.stack}</span>{INGREDIENTS.map(item=><b key={item.id}>{item.name}</b>)}</section></main>}
 
-  const settings = difficulties[difficulty];
-  const project = projects[orderIndex];
-  const customer = customers[orderIndex];
-  const allPlaced = new Set([...prep, ...cooked, ...grills.flatMap((item) => item ? [item.name] : [])]);
-  const pantry = useMemo(() => {
-    const required = project.ingredients.map((name) => ingredientMap.get(name)!);
-    const offset = (orderIndex * 3) % ingredients.length;
-    const distractors = [...ingredients.slice(offset), ...ingredients.slice(0, offset)]
-      .filter((item) => !project.ingredients.includes(item.name)).slice(0, 8);
-    return [...required, ...distractors].sort((a,b) => (a.short.charCodeAt(0) + orderIndex * 5) % 11 - (b.short.charCodeAt(0) + orderIndex * 5) % 11);
-  }, [orderIndex, project]);
-
-  const tone = (frequency: number, duration=.08) => {
-    if (!sound) return;
-    const AudioContextClass = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-    if (!AudioContextClass) return;
-    const context = new AudioContextClass();
-    const oscillator = context.createOscillator();
-    const gain = context.createGain();
-    oscillator.frequency.value = frequency;
-    gain.gain.setValueAtTime(.065, context.currentTime);
-    gain.gain.exponentialRampToValueAtTime(.001, context.currentTime + duration);
-    oscillator.connect(gain).connect(context.destination);
-    oscillator.start(); oscillator.stop(context.currentTime + duration);
-  };
-
-  useEffect(() => {
-    if (gameState !== "playing" || !accepted) return;
-    const tick = window.setInterval(() => {
-      setTimeLeft((value) => Math.max(0, value - .25));
-      setPatience((value) => Math.max(0, value - settings.patienceDrain));
-      setGrills((items) => items.map((item) => item ? { ...item, progress: Math.min(145, item.progress + settings.cookRate) } : null));
-    }, 250);
-    return () => window.clearInterval(tick);
-  }, [accepted, gameState, settings]);
-
-  useEffect(() => {
-    if (gameState === "playing" && accepted && (timeLeft <= 0 || patience <= 0)) setGameState("failed");
-  }, [accepted, gameState, patience, timeLeft]);
-
-  const resetOrder = (index=orderIndex) => {
-    setOrderIndex(index); setAccepted(false); setStation("lobby"); setPrep([]);
-    setGrills([null,null,null,null]); setCooked([]); setMistakes(0); setBurnt(0);
-    setPatience(100); setTimeLeft(difficulties[difficulty].orderTime); setGameState("playing");
-  };
-
-  const startShift = () => { setScore(0); resetOrder(0); };
-  const takeOrder = () => { setAccepted(true); setStation("prep"); tone(520,.12); };
-
-  const selectIngredient = (name: string) => {
-    if (!accepted || allPlaced.has(name)) return;
-    if (!project.ingredients.includes(name)) {
-      setMistakes((value) => value + 1); setScore((value) => Math.max(0,value-50)); tone(150,.15); return;
-    }
-    setPrep((items) => [...items,name]); tone(430 + prep.length * 60);
-  };
-
-  const removePrep = (name: string) => setPrep((items) => items.filter((item) => item !== name));
-  const addToGrill = (name: string) => {
-    const open = grills.findIndex((item) => !item);
-    if (open < 0) { tone(145,.15); return; }
-    setPrep((items) => items.filter((item) => item !== name));
-    setGrills((items) => items.map((item,index) => index === open ? { name, progress:0 } : item));
-    tone(310,.1);
-  };
-
-  const collectGrill = (slot: number) => {
-    const item = grills[slot]; if (!item) return;
-    if (item.progress < 62) {
-      setMistakes((value) => value + 1); setPrep((items) => [...items,item.name]); tone(160,.15);
-    } else if (item.progress <= 122) {
-      setCooked((items) => [...items,item.name]); setScore((value) => value + Math.round(180 * settings.multiplier)); tone(650,.12);
-    } else {
-      setMistakes((value) => value + 1); setBurnt((value) => value + 1); setScore((value) => Math.max(0,value-100)); tone(110,.2);
-    }
-    setGrills((items) => items.map((entry,index) => index === slot ? null : entry));
-  };
-
-  const serve = () => {
-    if (cooked.length !== project.ingredients.length) return;
-    const quality = Math.max(0, 1200 - mistakes * 130 - burnt * 170);
-    const earned = Math.round((quality + Math.floor(timeLeft) * 8 + Math.floor(patience) * 5) * settings.multiplier);
-    setLastEarned(earned); setScore((value) => value + earned); setGameState("served"); tone(780,.25);
-  };
-
-  const nextCustomer = () => {
-    if (orderIndex === projects.length - 1) setGameState("complete");
-    else resetOrder(orderIndex + 1);
-  };
-
-  const orderProgress = (prep.length + grills.filter(Boolean).length + cooked.length) / project.ingredients.length;
-  const stars = Math.max(1, Math.min(3, 3 - Math.floor(mistakes / 2) - burnt));
-
-  return (
-    <main className="service-game">
-      <div className="kitchen-bg" aria-hidden="true" /><div className="scene-vignette" aria-hidden="true" />
-
-      <header className="service-header">
-        <a className="brand" href="#game"><span><ChefHat size={21}/></span><b>IGNACIO&apos;S<br/><small>PROJECT KITCHEN</small></b></a>
-        <div className="shift-hud">
-          <span><small>PUNTOS</small><b>{score.toString().padStart(6,"0")}</b></span>
-          <span><small>NIVEL</small><b>{settings.name}</b></span>
-          <span className={timeLeft < 20 ? "danger" : ""}><small>ORDEN</small><b><Clock3 size={13}/> {Math.ceil(timeLeft)}s</b></span>
-        </div>
-        <div className="header-links">
-          <button onClick={() => setSound((value) => !value)} aria-label="Alternar sonido">{sound ? <Volume2/> : <VolumeX/>}</button>
-          <a href="https://github.com/igna-s" target="_blank" rel="noreferrer" aria-label="GitHub"><GitBranch/></a>
-          <a href="https://www.linkedin.com/in/ignacio-andres-schwindt" target="_blank" rel="noreferrer" aria-label="LinkedIn"><Contact/></a>
-        </div>
-      </header>
-
-      <div className="customer-queue" aria-label="Fila de clientes">
-        <div className="queue-label"><Users size={14}/><span>COLA<br/><b>{Math.max(0,projects.length-orderIndex-1)} ESPERANDO</b></span></div>
-        {customers.map((person,index) => (
-          <div key={person.name} className={`queue-person ${index === orderIndex ? "active" : ""} ${index < orderIndex ? "served" : ""}`}>
-            <i style={avatarStyle(index)}>{index < orderIndex && <Check size={12}/>}</i><span>{person.name}</span>
-          </div>
-        ))}
-        <div className="patience"><span>PACIENCIA DE {customer.name.toUpperCase()}</span><div><i style={{width:`${patience}%`}}/></div></div>
-      </div>
-
-      <nav className="station-nav" aria-label="Estaciones de la cocina">
-        {([
-          ["lobby","01",Users,"SALÓN"], ["prep","02",ClipboardList,"PREP"],
-          ["grill","03",Flame,"PARRILLA"], ["build","04",Layers3,"ARMADO"],
-        ] as const).map(([key,number,Icon,label]) => (
-          <button key={key} onClick={() => setStation(key)} className={station === key ? "active" : ""} disabled={!accepted && key !== "lobby"}>
-            <small>{number}</small><Icon size={17}/><span>{label}</span>
-            {key === "grill" && grills.some(Boolean) && <i>{grills.filter(Boolean).length}</i>}
-            {key === "build" && cooked.length > 0 && <i>{cooked.length}</i>}
-          </button>
-        ))}
-      </nav>
-
-      <section className="service-floor" id="game">
-        <aside className={`order-ticket ${accepted ? "printed" : ""}`}>
-          <div className="ticket-head"><span>ORDEN #{String(orderIndex+1).padStart(2,"0")}</span><b>{project.year}</b></div>
-          <p>CLIENTE · {customer.name.toUpperCase()}</p><h1>{project.name}</h1><em>{project.type}</em>
-          <div className="ticket-line"/>
-          <span className="recipe-title">RECETA / COMPONENTES</span>
-          {project.ingredients.map((name,index) => {
-            const done = cooked.includes(name); const cooking = grills.some((item) => item?.name === name); const ready = prep.includes(name);
-            return <div className={`ticket-item ${done ? "done" : cooking ? "cooking" : ready ? "ready" : ""}`} key={name}>
-              <span>{done ? <Check size={12}/> : index+1}</span><b>{name}</b><small>{done ? "OK" : cooking ? "FUEGO" : ready ? "PREP" : "—"}</small>
-            </div>;
-          })}
-          <div className="order-meter"><span>PROGRESO</span><b>{Math.round(orderProgress*100)}%</b><div><i style={{width:`${orderProgress*100}%`}}/></div></div>
-        </aside>
-
-        <section className={`station-scene station-${station}`}>
-          {station === "lobby" && <div className="lobby-scene">
-            <div className="counter-sign"><span>NOW SERVING</span><b>0{orderIndex+1}</b></div>
-            <div className="customer-card">
-              <div className="customer-avatar" style={avatarStyle(orderIndex)}><span className="mood">{patience > 65 ? "☺" : patience > 30 ? "•_•" : "!"}</span></div>
-              <div className="speech"><span>{customer.role}</span><h2>Hola, soy {customer.name}.</h2><p>“{customer.line}”</p><div><b>PEDIDO</b><strong>{project.name}</strong><small>{project.description}</small></div></div>
-            </div>
-            {!accepted ? <button className="primary-action" onClick={takeOrder}><ClipboardList/> TOMAR PEDIDO <ArrowRight/></button> : <button className="primary-action" onClick={() => setStation("prep")}><Check/> PEDIDO TOMADO · IR A PREP <ArrowRight/></button>}
-          </div>}
-
-          {station === "prep" && <div className="prep-scene">
-            <div className="scene-heading"><span><ClipboardList/> MISE EN PLACE</span><div><b>{prep.length}</b>/4 EN BANDEJA</div></div>
-            <p className="scene-help">Seleccioná los cuatro componentes que aparecen en el ticket. Los incorrectos bajan la puntuación.</p>
-            <div className="pantry-grid">{pantry.map((item) => {
-              const used = allPlaced.has(item.name);
-              return <button key={item.name} className={used ? "used" : ""} disabled={used} onClick={() => selectIngredient(item.name)} style={{"--ingredient":item.color} as CSSProperties}>
-                <i>{used ? <Check size={17}/> : item.short}</i><span><b>{item.name}</b><small>{item.note}</small></span>
-              </button>;
-            })}</div>
-            <div className="prep-tray"><span>BANDEJA DE PREPARACIÓN</span><div>{prep.length ? prep.map((name) => <button key={name} onClick={() => removePrep(name)}><b>{ingredientMap.get(name)?.short}</b>{name}<X size={11}/></button>) : <small>Elegí componentes de la despensa</small>}</div></div>
-            <button className="next-station" disabled={!prep.length} onClick={() => setStation("grill")}>LLEVAR A PARRILLA <Flame size={17}/><ArrowRight size={17}/></button>
-          </div>}
-
-          {station === "grill" && <div className="grill-scene">
-            <div className="scene-heading"><span><Flame/> LÍNEA CALIENTE</span><div><b>{grills.filter(Boolean).length}</b>/4 FUEGOS</div></div>
-            <p className="scene-help">Llevá cada componente a la zona dorada y retiralo a tiempo. Si pasa de 122%, se quema.</p>
-            <div className="grill-grid">{grills.map((item,index) => {
-              const state = item ? grillLabel(item.progress) : "LIBRE";
-              return <button key={index} className={`grill-slot ${item ? "occupied" : ""} ${item && item.progress > 122 ? "burned" : ""}`} onClick={() => item && collectGrill(index)}>
-                <span className="grill-number">FUEGO 0{index+1}</span><div className="grill-bars"/>
-                {item ? <><i className="heat-token" style={{"--ingredient":ingredientMap.get(item.name)?.color} as CSSProperties}>{ingredientMap.get(item.name)?.short}</i><b>{item.name}</b><strong>{state}</strong><div className="cook-track"><span className="sweet-zone"/><i style={{width:`${Math.min(100,item.progress/1.35)}%`}}/></div><small>{Math.round(item.progress)}% · CLICK PARA RETIRAR</small>{item.progress > 106 && <span className="smoke">•••</span>}</> : <><Flame className="empty-flame"/><b>DISPONIBLE</b><small>AGREGÁ UN COMPONENTE</small></>}
-              </button>;
-            })}</div>
-            <div className="grill-bench"><span>LISTOS PARA COCINAR</span><div>{prep.length ? prep.map((name) => <button key={name} onClick={() => addToGrill(name)}><i style={{background:ingredientMap.get(name)?.color}}>{ingredientMap.get(name)?.short}</i>{name}<Flame size={13}/></button>) : <small>No hay componentes en prep</small>}</div></div>
-            <button className="next-station" disabled={!cooked.length} onClick={() => setStation("build")}>IR A ARMADO <Layers3 size={17}/><ArrowRight size={17}/></button>
-          </div>}
-
-          {station === "build" && <div className="build-scene">
-            <div className="scene-heading"><span><Layers3/> PASE Y ARMADO</span><div><b>{cooked.length}</b>/4 TERMINADOS</div></div>
-            <p className="scene-help">Comprobá que el stack esté completo y serví el proyecto antes de agotar la paciencia del cliente.</p>
-            <div className={`build-board ${cooked.length === 4 ? "complete" : ""}`}>
-              <span className="blueprint-label">PROJECT BUILD · {project.year}</span><h2>{project.name}</h2><small>{project.type}</small>
-              <div className="build-slots">{project.ingredients.map((name,index) => {
-                const item = ingredientMap.get(name)!; const ready = cooked.includes(name);
-                return <div key={name} className={ready ? "ready" : ""} style={{"--ingredient":item.color} as CSSProperties}><i>{ready ? item.short : `0${index+1}`}</i><b>{ready ? name : "PENDIENTE"}</b><small>{ready ? "COCCIÓN OK" : "EN COCINA"}</small></div>;
-              })}</div>
-              <div className="build-checks"><span><Check/> COMPONENTES</span><span className={burnt ? "bad" : ""}>{burnt ? <CircleAlert/> : <Check/>} COCCIÓN</span><span className={mistakes > 1 ? "bad" : ""}>{mistakes > 1 ? <CircleAlert/> : <Check/>} PRECISIÓN</span></div>
-            </div>
-            <button className="serve-project" disabled={cooked.length !== 4} onClick={serve}><UtensilsCrossed/> SERVIR {project.name.toUpperCase()} <ArrowRight/></button>
-          </div>}
-        </section>
-      </section>
-
-      <footer className="service-footer"><span>COMPUTER ENGINEER · UNLP</span><span>INGREDIENTES REALES · PROYECTOS REALES</span><span>BUENOS AIRES · 2026</span></footer>
-
-      {gameState === "intro" && <section className="start-overlay">
-        <div className="start-copy"><span>IGNACIO&apos;S PROJECT KITCHEN</span><h1>Tu próximo<br/>proyecto está<br/><em>en la cocina.</em></h1><p>Gestioná clientes, interpretá pedidos, prepará tecnologías y cociná cada stack en su punto exacto.</p></div>
-        <div className="difficulty-panel"><span className="panel-kicker"><Gauge/> ELEGÍ EL NIVEL DEL TURNO</span>
-          <div>{(Object.keys(difficulties) as DifficultyKey[]).map((key,index) => { const item=difficulties[key]; return <button key={key} className={difficulty === key ? "selected" : ""} onClick={() => {setDifficulty(key);setTimeLeft(item.orderTime)}}><small>0{index+1}</small><b>{item.name}</b><span>{item.subtitle}</span><div>{Array.from({length:index+1}).map((_,i)=><Flame key={i} size={13} fill="currentColor"/>)}</div><em>{item.orderTime}s · x{item.multiplier}</em></button>})}</div>
-          <button className="open-kitchen" onClick={startShift}><ChefHat/> ABRIR LA COCINA <ArrowRight/></button><small>6 CLIENTES · 4 ESTACIONES · 1 TURNO</small>
-        </div>
-      </section>}
-
-      {gameState === "served" && <section className="result-overlay"><div className="result-card">
-        <div className="result-customer" style={avatarStyle(orderIndex)}/><span className="result-kicker"><Trophy/> ORDEN SERVIDA</span><h2>{project.name}</h2><p>{project.detail}</p>
-        <div className="result-stars">{[0,1,2].map((item)=><Star key={item} fill={item < stars ? "currentColor" : "none"}/>)}</div>
-        <div className="score-grid"><span><small>PUNTOS</small><b>+{lastEarned}</b></span><span><small>TIEMPO</small><b>{Math.ceil(timeLeft)}s</b></span><span><small>ERRORES</small><b>{mistakes}</b></span><span><small>QUEMADOS</small><b>{burnt}</b></span></div>
-        <div className="result-actions"><a href={project.url} target="_blank" rel="noreferrer">VER REPOSITORIO <GitBranch/><ArrowRight/></a><button onClick={nextCustomer}>{orderIndex === projects.length-1 ? "CERRAR TURNO" : "SIGUIENTE CLIENTE"}<ArrowRight/></button></div>
-      </div></section>}
-
-      {gameState === "failed" && <section className="result-overlay"><div className="result-card failed"><CircleAlert size={40}/><span className="result-kicker">CLIENTE PERDIDO</span><h2>El servicio se demoró.</h2><p>{customer.name} agotó su paciencia. Reiniciá la orden, organizá mejor las estaciones y vigilá la parrilla.</p><button className="retry" onClick={() => resetOrder()}><RotateCcw/> REINTENTAR ORDEN</button></div></section>}
-
-      {gameState === "complete" && <section className="result-overlay"><div className="result-card shift-complete"><Trophy size={45}/><span className="result-kicker">TURNO COMPLETADO</span><h2>Cocina cerrada.<br/>Portfolio servido.</h2><p>Atendiste los seis proyectos de Ignacio y conociste cada sistema desde sus componentes.</p><strong>{score.toString().padStart(6,"0")} PUNTOS</strong><div className="result-actions"><a href="https://github.com/igna-s" target="_blank" rel="noreferrer">EXPLORAR GITHUB <GitBranch/><ArrowRight/></a><button onClick={() => setGameState("intro")}>NUEVO TURNO <RotateCcw/></button></div></div></section>}
-    </main>
-  );
+function GameScreen({state,dispatch}:{state:GameState;dispatch:(a:Action)=>void}){
+  const t=copy[state.language],recipe=RECIPES[state.recipeIndex];const[cutStart,setCutStart]=useState<{x:number;y:number}|null>(null);const requiredCounts=recipe.ingredientIds.map(id=>state.placements.filter(point=>point.id===id).length);const prepReady=state.sauce>=72&&state.cheese>=68&&requiredCounts.every(count=>count>=3);const pantry=useMemo(()=>{const required=recipe.ingredientIds.map(id=>ingredientById.get(id)!);const extras=INGREDIENTS.filter(item=>!recipe.ingredientIds.includes(item.id));return[...required,...extras.slice(state.recipeIndex,state.recipeIndex+5)]},[recipe,state.recipeIndex]);const cookLabel=state.cook<25?t.raw:state.cook<72?t.cooking:state.cook<=100?t.perfect:state.cook<=118?t.burning:t.burnt;const patience=state.patience/DIFFICULTIES[state.difficulty].patience*100;const addAt=(x:number,y:number)=>{if(state.selected)dispatch({type:"PLACE",placement:{id:state.selected,x,y,rotation:Math.round(Math.random()*180)},correct:recipe.ingredientIds.includes(state.selected)})};
+  return <main className="game-shell"><div className="kitchen-art" aria-hidden="true"/><div className="game-shade" aria-hidden="true"/><header className="game-header"><button className="game-brand" onClick={()=>dispatch({type:"HOME"})}><ChefHat/><span>STACK &amp; SLICE<small>IGNACIO&apos;S DEV PIZZERIA</small></span></button><div className="game-stats"><span><small>{t.total}</small><b>{state.shiftScore.toString().padStart(6,"0")}</b></span><span><small>{t.level}</small><b>{String(state.recipeIndex+1).padStart(2,"0")}</b></span><span><small>{t.patience}</small><b>{Math.max(0,Math.ceil(state.patience))}s</b></span></div><div className="game-tools"><button onClick={()=>dispatch({type:"LANG",language:state.language==="es"?"en":"es"})}><Globe2/><span>{state.language.toUpperCase()}</span></button><button onClick={()=>dispatch({type:"TOGGLE_SOUND"})}>{state.sound?<Volume2/>:<VolumeX/>}</button><button onClick={()=>dispatch({type:"PORTFOLIO"})}><Sparkles/><span>{t.portfolio}</span></button></div></header><div className="customer-strip"><div className="queue-title"><UserRound/><span>{RECIPES.length-state.recipeIndex-1}<small>{t.queue}</small></span></div>{RECIPES.slice(state.recipeIndex,state.recipeIndex+5).map((item,index)=><div className={`mini-customer ${index===0?"active":""}`} key={item.id}><i style={avatarStyle(item.customer.avatar)}/><span>{item.customer.name}</span></div>)}<div className="patience-meter"><span>{t.patience} · {recipe.customer.name}</span><div><i style={{width:`${patience}%`}}/></div></div></div><nav className="station-rail" aria-label="Game stations">{([["reception",Store,t.reception],["prep",ChefHat,t.prep],["oven",Flame,t.oven],["cut",Scissors,t.cut]] as const).map(([key,Icon,label],index)=><button key={key} className={state.station===key?"active":""} disabled={state.station!==key}><span>0{index+1}</span><Icon/><b>{label}</b>{state.station===key&&<i/>}</button>)}</nav><div className="game-floor"><aside className="ticket"><div className="ticket-top"><b>{t.order} #{String(state.recipeIndex+1).padStart(2,"0")}</b><span>{recipe.year}</span></div><small>CLIENT · {recipe.customer.name.toUpperCase()}</small><h1>{recipe.project}</h1><em>{state.language==="es"?recipe.subtitle:recipe.subtitleEn}</em><p>{state.language==="es"?recipe.description:recipe.descriptionEn}</p><div className="ticket-rule"/><b className="ticket-recipe">{t.requested}</b>{recipe.ingredientIds.map((id,index)=>{const item=ingredientById.get(id)!;const count=requiredCounts[index];return <div className={`ticket-component ${count>=3?"done":""}`} key={id}><span style={{"--component":item.color} as CSSProperties}>{item.glyph}</span><b>{item.name}</b><small>{count}/3</small></div>})}<div className="coverage"><span>{t.sauce}<b>{state.sauce}%</b></span><span>{t.cheese}<b>{state.cheese}%</b></span></div></aside><section className={`station-work station-${state.station}`}>
+    {state.station==="reception"&&<div className="reception-scene"><div className="customer-full" style={avatarStyle(recipe.customer.avatar)}><span className="customer-shadow"/></div><div className="speech-card"><span>{recipe.customer.role}</span><h2>{recipe.customer.name}</h2><blockquote>“{state.language==="es"?recipe.customer.quote:recipe.customer.quoteEn}”</blockquote><div><small>{t.requested}</small><b>{recipe.project}</b><p>{state.language==="es"?recipe.description:recipe.descriptionEn}</p></div><button className="main-action" onClick={()=>dispatch({type:"ACCEPT"})}>{t.accept}<ArrowRight/></button></div></div>}
+    {state.station==="prep"&&<div className="prep-scene"><div className="work-heading"><span><ChefHat/>{t.prep}</span><b>{prepReady?"READY":"MISE EN PLACE"}</b></div><p className="station-help">{t.prepHelp}</p><div className="prep-layout"><div className="pizza-zone"><Pizza placements={state.placements} sauce={state.sauce} cheese={state.cheese} selected={state.selected} onPlace={addAt}/><div className="coverage-controls"><button onClick={()=>dispatch({type:"ADD_SAUCE"})} style={{"--fill":`${state.sauce}%`} as CSSProperties}><span>01</span><b>{t.sauce}</b><i/></button><button onClick={()=>dispatch({type:"ADD_CHEESE"})} style={{"--fill":`${state.cheese}%`} as CSSProperties}><span>02</span><b>{t.cheese}</b><i/></button></div></div><div className="topping-bank"><div className="bank-title"><span>{t.toppings}</span><b>{state.selected?ingredientById.get(state.selected)!.name:"—"}</b></div><div className="topping-grid">{pantry.map(item=><button key={item.id} className={`${state.selected===item.id?"active":""} topping-card-${item.category}`} onClick={()=>dispatch({type:"SELECT_TOPPING",id:item.id})} style={{"--topping":item.color} as CSSProperties}><i><span>{item.glyph}</span></i><b>{item.name}</b><small>{item.category}</small><em>{state.placements.filter(point=>point.id===item.id).length}</em></button>)}</div><button className="undo-button" onClick={()=>dispatch({type:"UNDO"})} disabled={!state.placements.length}><RotateCcw/>{t.undo}</button></div></div><button className="main-action station-action" onClick={()=>dispatch({type:"BAKE"})} disabled={!prepReady}><Flame/>{prepReady?t.bake:t.missing}<ArrowRight/></button></div>}
+    {state.station==="oven"&&<div className="oven-scene"><div className="work-heading"><span><Flame/>{t.oven}</span><b className={state.cook>100?"danger":""}>{cookLabel}</b></div><p className="station-help">{t.ovenHelp}</p><div className="oven-layout"><div className={`commercial-oven ${state.ovenActive?"on":""} ${state.cook>105?"smoking":""}`}><div className="oven-metal"><span>STACK &amp; SLICE · DECK 01</span><div className="oven-display"><small>CHAMBER</small><b>{state.temperature}°C</b><i>{state.ovenActive?"HEATING":"HOLD"}</i></div></div><div className="oven-window"><div className="oven-glow"/><Pizza placements={state.placements} sauce={state.sauce} cheese={state.cheese} cook={state.cook} mode="oven"/>{state.cook>105&&<div className="oven-smoke">● ● ●</div>}</div><div className="oven-handle"/></div><aside className="oven-console"><Thermometer/><span>{t.heat}</span><b>{state.temperature}°</b><div className="temp-buttons"><button onClick={()=>dispatch({type:"TEMP",amount:-15})}><Minus/></button><button onClick={()=>dispatch({type:"TEMP",amount:15})}><Plus/></button></div><div className="cook-gauge"><span style={{height:`${Math.min(100,state.cook/1.25)}%`}}/><i className="sweet-spot"/><b>{Math.round(state.cook)}%</b></div><button onClick={()=>dispatch({type:"TOGGLE_OVEN"})}>{state.ovenActive?<><Pause/>{t.pause}</>:<><Play/>{t.resumeOven}</>}</button></aside></div><button className="main-action station-action" onClick={()=>dispatch({type:"TAKE_OUT"})} disabled={state.cook<45}><Scissors/>{t.remove}<ArrowRight/></button></div>}
+    {state.station==="cut"&&<div className="cut-scene"><div className="work-heading"><span><Scissors/>{t.cut}</span><b>{recipe.targetCuts} {t.slices}</b></div><p className="station-help">{t.cutHelp}</p><div className="cut-layout"><div className="cut-board"><Pizza placements={state.placements} sauce={state.sauce} cheese={state.cheese} cook={state.cook} cuts={state.cuts} mode="cut" onCutStart={(x,y)=>setCutStart({x,y})} onCutEnd={(x,y)=>{if(cutStart){dispatch({type:"ADD_CUT",cut:{x1:cutStart.x,y1:cutStart.y,x2:x,y2:y}});setCutStart(null)}}}/><span className="board-brand">STACK &amp; SLICE · MAPLE BOARD</span></div><aside className="cut-ticket"><Scissors/><small>CUT PLAN</small><b>{recipe.targetCuts}</b><span>{t.slices}</span><div>{state.cuts.map((_,index)=><i key={index}/>)}</div><button onClick={()=>dispatch({type:"AUTO_CUT"})}><Sparkles/>{t.precise}</button><button onClick={()=>dispatch({type:"RESTART_ORDER"})}><Trash2/>{t.restart}</button></aside></div><button className="main-action station-action" onClick={()=>dispatch({type:"FINISH"})} disabled={!state.cuts.length}><Check/>{t.deliver}<ArrowRight/></button></div>}
+    {state.station==="result"&&state.result&&<div className="result-scene"><div className="result-customer" style={avatarStyle(recipe.customer.avatar)}/><span className="eyebrow"><Trophy/>{t.result}</span><h2>{state.result.stars===3?"Perfectly engineered.":state.result.stars===2?"Strong delivery.":"Iteration shipped."}</h2><div className="result-stars">{[0,1,2].map(index=><Star key={index} fill={index<state.result!.stars?"currentColor":"none"}/>)}</div><div className="score-breakdown">{[[t.orderScore,state.result.order],[t.distribution,state.result.distribution],[t.bakeScore,state.result.bake],[t.cutScore,state.result.cut],[t.service,state.result.service]].map(([label,value])=><div key={label}><span>{label}</span><b>{value}</b><i><em style={{width:`${value}%`}}/></i></div>)}</div><div className="result-total"><span>{t.total}</span><b>+{state.result.total.toLocaleString()}</b></div><div className="result-actions"><a href={recipe.repo} target="_blank" rel="noreferrer"><GitBranch/>{t.openRepo}</a><button onClick={()=>dispatch({type:"NEXT"})}>{t.next}<ArrowRight/></button></div></div>}
+    </section></div><footer className="game-footer"><span>{t.made}</span><span>{DIFFICULTIES[state.difficulty].name} · {recipe.project}</span><a href="mailto:ignacio.schwindt.dev@gmail.com">ignacio.schwindt.dev@gmail.com</a></footer></main>
 }
+
+export default function Home(){const[state,dispatch]=useReducer(reducer,initialState);const[hasSave,setHasSave]=useState(false);useEffect(()=>setHasSave(Boolean(localStorage.getItem(SAVE_KEY))),[]);useEffect(()=>{if(state.screen==="game"&&state.station!=="result"){localStorage.setItem(SAVE_KEY,JSON.stringify(state));setHasSave(true)}},[state]);useEffect(()=>{if(state.screen!=="game"||state.station==="result")return;const timer=window.setInterval(()=>dispatch({type:"TICK"}),250);return()=>window.clearInterval(timer)},[state.screen,state.station]);if(state.screen==="home")return <HomeScreen state={state} dispatch={dispatch} hasSave={hasSave}/>;if(state.screen==="portfolio")return <Portfolio state={state} dispatch={dispatch}/>;return <GameScreen state={state} dispatch={dispatch}/>}

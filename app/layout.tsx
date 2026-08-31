@@ -3,20 +3,20 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://igna-s.is-a.dev"),
-  title: "Ignacio's Lab — Engineering, Served Fresh",
-  description: "Jugá un turno en la cocina digital de Ignacio Schwindt: cada receta es un proyecto y cada ingrediente, una tecnología real.",
+  title: "Stack & Slice — Ignacio's Dev Pizzeria",
+  description: "Portfolio jugable bilingüe de Ignacio Schwindt: cada proyecto es una receta y cada tecnología, un topping que tenés que preparar, hornear y cortar.",
   other: { "codex-preview": "development" },
   icons: { icon: "/favicon.svg", shortcut: "/favicon.svg" },
   openGraph: {
-    title: "Ignacio's Lab — Engineering, Served Fresh",
+    title: "Stack & Slice — Ignacio's Dev Pizzeria",
     description: "Un portfolio jugable donde los proyectos se cocinan componente por componente.",
-    images: [{ url: "/og.png", width: 1672, height: 941, alt: "Ignacio's Lab — cocina digital interactiva" }],
+    images: [{ url: "/pizzeria-facade.png", width: 1672, height: 941, alt: "Stack & Slice — pizzería digital interactiva" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Ignacio's Lab — Engineering, Served Fresh",
+    title: "Stack & Slice — Ignacio's Dev Pizzeria",
     description: "Un portfolio jugable donde los proyectos se cocinan componente por componente.",
-    images: ["/og.png"],
+    images: ["/pizzeria-facade.png"],
   },
 };
 
