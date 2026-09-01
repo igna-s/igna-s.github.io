@@ -127,3 +127,14 @@ export const RECIPES: Recipe[] = [
 ];
 
 export const ingredientById = new Map(INGREDIENTS.map((ingredient) => [ingredient.id, ingredient]));
+
+export type ToppingSprite = { sheet: "main" | "extra"; index: number; columns: number; rows: number };
+
+export const toppingSpriteById = new Map<string, ToppingSprite>(
+  INGREDIENTS.map((ingredient, index) => [
+    ingredient.id,
+    index < 24
+      ? { sheet: "main" as const, index, columns: 6, rows: 4 }
+      : { sheet: "extra" as const, index: index - 24, columns: 2, rows: 2 },
+  ]),
+);

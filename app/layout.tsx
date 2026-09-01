@@ -10,13 +10,13 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Stack & Slice — Ignacio's Dev Pizzeria",
     description: "Un portfolio jugable donde los proyectos se cocinan componente por componente.",
-    images: [{ url: "/pizzeria-facade.png", width: 1672, height: 941, alt: "Stack & Slice — pizzería digital interactiva" }],
+    images: [{ url: "/modern-facade-v2.png", width: 1672, height: 941, alt: "Stack & Slice — restaurante digital interactivo" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Stack & Slice — Ignacio's Dev Pizzeria",
     description: "Un portfolio jugable donde los proyectos se cocinan componente por componente.",
-    images: ["/pizzeria-facade.png"],
+    images: ["/modern-facade-v2.png"],
   },
 };
 
