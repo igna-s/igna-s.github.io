@@ -1,21 +1,37 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./game-v2.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://igna-s.is-a.dev"),
-  title: "Stack & Slice — Ignacio's Dev Pizzeria",
-  description: "Portfolio jugable bilingüe de Ignacio Schwindt: cada proyecto es una receta y cada tecnología, un topping que tenés que preparar, hornear y cortar.",
+  title: {
+    default: "Ignacio Schwindt — Computer Engineer",
+    template: "%s — Ignacio Schwindt",
+  },
+  description: "Portfolio bilingüe de Ignacio Schwindt: inteligencia artificial, sistemas, computación cuántica, hardware e interfaces interactivas.",
+  applicationName: "Ignacio Schwindt — Portfolio",
+  authors: [{ name: "Ignacio Schwindt", url: "https://github.com/igna-s" }],
+  creator: "Ignacio Schwindt",
+  keywords: ["Ignacio Schwindt", "computer engineer", "AI", "embedded systems", "quantum computing", "portfolio"],
+  alternates: { canonical: "/" },
+  manifest: "/site.webmanifest",
+  icons: {
+    icon: [{ url: "/favicon.svg?v=2", type: "image/svg+xml" }],
+    shortcut: "/favicon.svg?v=2",
+    apple: "/favicon.svg?v=2",
+  },
   other: { "codex-preview": "development" },
-  icons: { icon: "/favicon.svg", shortcut: "/favicon.svg" },
   openGraph: {
-    title: "Stack & Slice — Ignacio's Dev Pizzeria",
-    description: "Un portfolio jugable donde los proyectos se cocinan componente por componente.",
-    images: [{ url: "/modern-facade-v2.png", width: 1672, height: 941, alt: "Stack & Slice — restaurante digital interactivo" }],
+    type: "website",
+    url: "/",
+    title: "Ignacio Schwindt — Computer Engineer",
+    description: "Ingeniería de software, IA y sistemas que conectan la lógica de alto nivel con el mundo físico.",
+    images: [{ url: "/modern-facade-v2.png", width: 1672, height: 941, alt: "Portfolio interactivo de Ignacio Schwindt" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Stack & Slice — Ignacio's Dev Pizzeria",
-    description: "Un portfolio jugable donde los proyectos se cocinan componente por componente.",
+    title: "Ignacio Schwindt — Computer Engineer",
+    description: "Ingeniería de software, IA, sistemas e interfaces interactivas.",
     images: ["/modern-facade-v2.png"],
   },
 };

@@ -65,7 +65,8 @@ export function scoreOrder(input: ScoreInput): ScoreBreakdown {
   const cut = cutScore(input.cuts, input.targetCuts);
   const service = Math.round(Math.max(0, Math.min(100, input.patience - input.mistakes * 4)));
   const raw = order * 0.25 + distribution * 0.25 + bake * 0.25 + cut * 0.15 + service * 0.1;
-  const total = Math.round(raw * 40 * input.multiplier);
+  const criticalPenalty = order < 25 || bake < 25 ? 0.35 : order < 55 || bake < 55 ? 0.7 : 1;
+  const total = Math.round(raw * 40 * input.multiplier * criticalPenalty);
   const stars = raw >= 90 ? 3 : raw >= 72 ? 2 : 1;
   return { order, distribution, bake, cut, service, total, stars };
 }

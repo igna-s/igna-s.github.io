@@ -1,0 +1,17 @@
+{
+  "name": "Ignacio Schwindt — Computer Engineer",
+  "short_name": "Ignacio",
+  "description": "Portfolio bilingüe de ingeniería, inteligencia artificial y sistemas.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#07100e",
+  "theme_color": "#07100e",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

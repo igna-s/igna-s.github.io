@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { INGREDIENTS, RECIPES, toppingSpriteById } from "../lib/game-data.ts";
-import { gameReducer, initialState, isPrepComplete } from "../lib/game-state.ts";
+import { arrivalInterval, gameReducer, initialState, isPrepComplete } from "../lib/game-state.ts";
 
 const reduce = (state, action) => gameReducer(state, action);
 
@@ -62,4 +62,42 @@ test("quick portfolio returns to the exact running station", () => {
   state = reduce(state, { type: "CLOSE_PORTFOLIO" });
   assert.equal(state.screen, "game");
   assert.equal(state.station, "prep");
+});
+
+test("customers arrive over time and orders can use multiple ovens concurrently", () => {
+  let state = reduce(initialState, { type: "START" });
+  state = reduce(state, { type: "ACCEPT" });
+  state = reduce(state, { type: "BAKE" });
+  assert.equal(state.ovenSlots.filter((slot) => slot.recipeIndex !== null).length, 1);
+  assert.equal(state.sauce, 0, "an incomplete pizza may still be baked");
+
+  const ticksToArrival = Math.ceil(arrivalInterval(state.difficulty) / 0.25);
+  for (let index = 0; index < ticksToArrival; index += 1) state = reduce(state, { type: "TICK" });
+  assert.equal(state.openOrders.length, 2);
+
+  const secondOrder = state.openOrders[1];
+  state = reduce(state, { type: "SWITCH_ORDER", index: secondOrder });
+  assert.equal(state.station, "reception");
+  state = reduce(state, { type: "ACCEPT" });
+  state = reduce(state, { type: "BAKE" });
+  assert.equal(state.ovenSlots.filter((slot) => slot.recipeIndex !== null).length, 2);
+});
+
+test("a pizza can be removed raw and delivered with a poor score", () => {
+  let state = reduce(initialState, { type: "START" });
+  state = reduce(state, { type: "ACCEPT" });
+  state = reduce(state, { type: "BAKE" });
+  state = reduce(state, { type: "TAKE_OUT" });
+  assert.equal(state.station, "cut");
+  assert.equal(state.cook, 0);
+  state = reduce(state, { type: "FINISH" });
+  assert.equal(state.station, "result");
+  assert.ok(state.result.total < 500);
+});
+
+test("game menu returns directly to the primary portfolio", () => {
+  let state = reduce(initialState, { type: "GAME_MENU" });
+  assert.equal(state.screen, "gameMenu");
+  state = reduce(state, { type: "PORTFOLIO" });
+  assert.equal(state.screen, "home");
 });
