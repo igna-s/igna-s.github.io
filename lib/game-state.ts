@@ -132,7 +132,7 @@ export function gameReducer(state:GameState,action:Action):GameState{
     }
     case"TOGGLE_OVEN":return{...state,ovenActive:!state.ovenActive,ovenSlots:state.ovenSlots.map(slot=>slot.recipeIndex===state.recipeIndex?{...slot,active:!slot.active}:slot)};
     case"TICK":{
-      if(state.screen!=="game")return state;
+      if(state.screen!=="game"||state.station==="result")return state;
       const drain=state.difficulty==="rush"?.24:state.difficulty==="service"?.17:.11;
       const currentProgress=snapshot(state);
       const progress={...state.orderProgress,[state.recipeIndex]:currentProgress};

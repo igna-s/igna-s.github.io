@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import type { CSSProperties, DragEvent as ReactDragEvent, PointerEvent as ReactPointerEvent } from "react";
 import { useEffect, useMemo, useReducer, useRef, useState } from "react";
+import Image from "next/image";
 import { DIFFICULTIES, INGREDIENTS, RECIPES, ingredientById, toppingSpriteById, type DifficultyKey, type Recipe } from "@/lib/game-data";
 import { type Cut, type Placement } from "@/lib/game-engine";
 import { gameReducer, initialState, isPrepComplete, SAVE_KEY, type Action, type GameState, type Language } from "@/lib/game-state";
@@ -54,7 +55,7 @@ function PortfolioLanding({state,dispatch}:{state:GameState;dispatch:(a:Action)=
     kicker:"Computer Engineer · IA · Sistemas · Interfaces",
     titleA:"Ingeniería que une",titleB:"modelos, software",titleC:"y mundo físico.",
     intro:"Diseño y construyo productos inteligentes de punta a punta: desde agentes y retrieval hasta sistemas embebidos, experiencias 3D y hardware interactivo.",
-    viewProjects:"Ver proyectos",play:"Entrar al minijuego",source:"GitHub",
+    viewProjects:"Ver proyectos",play:"Entrar al minijuego",source:"GitHub",bridgeTag:"La idea detrás del puente",bridgeTitle:"Software que piensa. Hardware que interactúa.",bridgeText:"Mi trabajo vive entre dos orillas: modelos y producto de un lado; señales, sensores y sistemas físicos del otro. La ingeniería es el puente que los vuelve una sola experiencia.",software:"Lógica de alto nivel",softwareText:"Agentes, RAG, productos full-stack e interfaces inteligentes.",hardware:"Señales de bajo nivel",hardwareText:"Sistemas embebidos, sensores, tiempo real e interacción física.",process:"Proceso",processTitle:"Explorar, diseñar, construir y validar.",
     selected:"Trabajo seleccionado",selectedNote:"Proyectos reales, decisiones técnicas concretas y código para explorar.",
     all:"Todos",ai:"IA + datos",systems:"Sistemas",interactive:"Interactivos",open:"Abrir repositorio",archive:"Ver los 8 proyectos",
     expertise:"Cómo trabajo",expertiseTitle:"Del prototipo a un sistema que se puede usar.",
@@ -69,7 +70,7 @@ function PortfolioLanding({state,dispatch}:{state:GameState;dispatch:(a:Action)=
     kicker:"Computer Engineer · AI · Systems · Interfaces",
     titleA:"Engineering across",titleB:"models, software",titleC:"and the physical world.",
     intro:"I design and build intelligent products end to end—from agents and retrieval to embedded systems, 3D experiences, and interactive hardware.",
-    viewProjects:"View projects",play:"Enter the mini-game",source:"GitHub",
+    viewProjects:"View projects",play:"Enter the mini-game",source:"GitHub",bridgeTag:"The thinking behind the bridge",bridgeTitle:"Software that thinks. Hardware that interacts.",bridgeText:"My work lives between two shores: models and product on one side; signals, sensors, and physical systems on the other. Engineering is the bridge that turns them into one experience.",software:"High-level logic",softwareText:"Agents, RAG, full-stack products, and intelligent interfaces.",hardware:"Low-level signals",hardwareText:"Embedded systems, sensors, real time, and physical interaction.",process:"Process",processTitle:"Explore, design, build, and validate.",
     selected:"Selected work",selectedNote:"Real projects, concrete technical decisions, and code ready to explore.",
     all:"All",ai:"AI + data",systems:"Systems",interactive:"Interactive",open:"Open repository",archive:"View all 8 projects",
     expertise:"How I work",expertiseTitle:"From prototype to a system people can use.",
@@ -94,9 +95,10 @@ function PortfolioLanding({state,dispatch}:{state:GameState;dispatch:(a:Action)=
     <main id="main-content">
       <section className="portfolio-intro" id="top">
         <div className="intro-copy"><span className="portfolio-kicker"><i/> {text.kicker}</span><h1>{text.titleA}<br/><em>{text.titleB}</em><br/>{text.titleC}</h1><p>{text.intro}</p><div className="intro-actions"><a className="primary-link" href="#projects">{text.viewProjects}<ArrowRight/></a><button onClick={()=>dispatch({type:"GAME_MENU"})}><Play/>{text.play}</button><a href="https://github.com/igna-s" target="_blank" rel="noreferrer"><GitBranch/>{text.source}</a></div></div>
-        <aside className="intro-console" aria-label={es?"Resumen profesional":"Professional summary"}><div className="console-top"><span>IGNACIO.DEV</span><i>ONLINE</i></div><div className="console-monogram">I<span>/</span>S</div><p>{es?"Conecto ideas ambiciosas con ingeniería ejecutable.":"I connect ambitious ideas with executable engineering."}</p><div className="console-metrics"><span><b>{RECIPES.length}</b>{es?"proyectos":"projects"}</span><span><b>{INGREDIENTS.length}</b>{es?"tecnologías":"technologies"}</span><span><b>04</b>{es?"dominios":"domains"}</span></div><div className="console-line"/></aside>
+        <aside className="intro-console profile-console" aria-label={es?"Perfil profesional de Ignacio":"Ignacio's professional profile"}><div className="console-top"><span>GITHUB / @IGNA-S</span><i>ARGENTINA</i></div><div className="profile-image"><Image src="/github-avatar.png" alt={es?"Puente blanco sobre el río, imagen de perfil de Ignacio en GitHub":"White bridge over the river, Ignacio's GitHub profile image"} width={512} height={512} priority unoptimized/><span>{es?"CONECTAR ES CONSTRUIR":"CONNECTING IS BUILDING"}</span></div><p>{es?"Conecto ideas ambiciosas con ingeniería ejecutable.":"I connect ambitious ideas with executable engineering."}</p><div className="console-metrics"><span><b>{RECIPES.length}</b>{es?"proyectos":"projects"}</span><span><b>{INGREDIENTS.length}</b>{es?"tecnologías":"technologies"}</span><span><b>04</b>{es?"dominios":"domains"}</span></div><div className="console-line"/></aside>
       </section>
       <div className="domain-strip" aria-label={es?"Áreas de trabajo":"Areas of work"}><span>APPLIED AI</span><i/> <span>FULL-STACK</span><i/> <span>QUANTUM</span><i/> <span>EMBEDDED</span><i/> <span>INTERACTIVE SYSTEMS</span></div>
+      <section className="bridge-section" aria-labelledby="bridge-title"><div className="bridge-copy"><span>00 / {text.bridgeTag}</span><h2 id="bridge-title">{text.bridgeTitle}</h2><p>{text.bridgeText}</p></div><div className="bridge-system" aria-label={es?"Conexión entre software y hardware":"Connection between software and hardware"}><article><span>01</span><b>{text.software}</b><p>{text.softwareText}</p><div><i/>AI / LLM / WEB</div></article><div className="bridge-link" aria-hidden="true"><i/><span>ENGINEERING</span><i/></div><article><span>02</span><b>{text.hardware}</b><p>{text.hardwareText}</p><div><i/>EMBEDDED / IOT / RT</div></article></div></section>
       <section className="portfolio-projects" id="projects">
         <div className="section-heading"><div><span>01 / {text.selected}</span><h2>{text.selected}</h2></div><p>{text.selectedNote}</p></div>
         <div className="project-filters" role="group" aria-label={es?"Filtrar proyectos":"Filter projects"}>{filters.map(key=><button key={key} className={filter===key?"active":""} aria-pressed={filter===key} onClick={()=>setFilter(key)}>{labels[key]}</button>)}</div>
@@ -104,6 +106,7 @@ function PortfolioLanding({state,dispatch}:{state:GameState;dispatch:(a:Action)=
         <button className="archive-button" onClick={()=>dispatch({type:"PORTFOLIO"})}>{text.archive}<ArrowRight/></button>
       </section>
       <section className="expertise-section" id="expertise"><div className="section-heading inverse"><div><span>02 / {text.expertise}</span><h2>{text.expertiseTitle}</h2></div><p>{es?"Trabajo entre disciplinas sin perder rigor técnico ni claridad de producto.":"I work across disciplines without losing technical rigor or product clarity."}</p></div><div className="expertise-grid">{expertise.map(([number,title,description])=><article key={number}><span>{number}</span><h3>{title}</h3><p>{description}</p></article>)}</div></section>
+      <section className="process-section"><div><span>03 / {text.process}</span><h2>{text.processTitle}</h2></div><ol>{(es?[["01","Explorar","Entender el problema, las restricciones y la experiencia deseada."],["02","Diseñar","Convertir incertidumbre en arquitectura y decisiones comprobables."],["03","Construir","Integrar software, modelos y hardware en un producto coherente."],["04","Validar","Medir, iterar y documentar para que el sistema pueda crecer."]]:[["01","Explore","Understand the problem, constraints, and intended experience."],["02","Design","Turn uncertainty into architecture and testable decisions."],["03","Build","Integrate software, models, and hardware into a coherent product."],["04","Validate","Measure, iterate, and document so the system can grow."]]).map(([n,title,description])=><li key={n}><span>{n}</span><b>{title}</b><p>{description}</p></li>)}</ol></section>
       <section className="game-feature" id="game"><div className="game-feature-art" role="img" aria-label={es?"Restaurante digital Stack and Slice":"Stack and Slice digital restaurant"}><span>PORTFOLIO GAME</span></div><div className="game-feature-copy"><span>{text.gameTag}</span><h2>{text.gameTitle}</h2><p>{text.gameText}</p><small>{text.gameAside}</small><button onClick={()=>dispatch({type:"GAME_MENU"})}><Play/>{text.gameCta}<ArrowRight/></button></div></section>
       <section className="contact-section" id="contact"><span>{text.contactTag}</span><h2>{text.contactTitle}</h2><div><a className="contact-primary" href="mailto:ignacio.schwindt.dev@gmail.com"><Contact/>{text.write}</a><a href="https://github.com/igna-s" target="_blank" rel="noreferrer"><GitBranch/>GitHub</a><a href="https://www.linkedin.com/in/ignacio-andres-schwindt" target="_blank" rel="noreferrer"><Globe2/>LinkedIn</a></div><a className="contact-email" href="mailto:ignacio.schwindt.dev@gmail.com">ignacio.schwindt.dev@gmail.com</a></section>
     </main>
@@ -153,12 +156,26 @@ function GameScreen({state,dispatch}:{state:GameState;dispatch:(a:Action)=>void}
     </section></div><footer className="game-footer"><span>{t.made}</span><span>{DIFFICULTIES[state.difficulty].name} · {recipe.project}</span><a href="mailto:ignacio.schwindt.dev@gmail.com">ignacio.schwindt.dev@gmail.com</a></footer></main>
 }
 
+function playSfx(action:Action){
+  if(typeof window==="undefined"||action.type==="TICK")return;
+  const AudioCtor=window.AudioContext||(window as typeof window&{webkitAudioContext?:typeof AudioContext}).webkitAudioContext;
+  if(!AudioCtor)return;
+  const context=new AudioCtor();
+  const notes:Partial<Record<Action["type"],number[]>>={
+    ACCEPT:[392,523],PLACE:[230],ADD_SAUCE:[180,215],ADD_CHEESE:[260,310],BAKE:[150,205],
+    TAKE_OUT:[440,587],ADD_CUT:[320],AUTO_CUT:[330,440,550],FINISH:[523,659,784],NEXT:[660,880],
+    SWITCH_ORDER:[300],NAV_STATION:[250,300],RESTART_ORDER:[210,170],TOGGLE_OVEN:[190],
+  };
+  const frequencies=notes[action.type]??[270];
+  frequencies.forEach((frequency,index)=>{const oscillator=context.createOscillator(),gain=context.createGain(),start=context.currentTime+index*.045;oscillator.type=["BAKE","TOGGLE_OVEN"].includes(action.type)?"sawtooth":action.type==="PLACE"?"triangle":"sine";oscillator.frequency.setValueAtTime(frequency,start);gain.gain.setValueAtTime(.035,start);gain.gain.exponentialRampToValueAtTime(.001,start+.11);oscillator.connect(gain).connect(context.destination);oscillator.start(start);oscillator.stop(start+.12);if(index===frequencies.length-1)oscillator.onended=()=>void context.close()});
+}
+
 export default function Home(){
   const[state,dispatch]=useReducer(gameReducer,initialState);const[hasSave,setHasSave]=useState(false);
   useEffect(()=>{const stored=localStorage.getItem(SAVE_KEY);if(!stored)return;try{const parsed=JSON.parse(stored) as Partial<GameState>;if(typeof parsed.recipeIndex==="number"&&Array.isArray(parsed.placements))window.setTimeout(()=>setHasSave(true),0);else localStorage.removeItem(SAVE_KEY)}catch{localStorage.removeItem(SAVE_KEY)}},[]);
   useEffect(()=>{if(state.screen==="game"&&state.station!=="result"){localStorage.setItem(SAVE_KEY,JSON.stringify(state));window.setTimeout(()=>setHasSave(true),0)}},[state]);
   useEffect(()=>{if(state.screen!=="game"||state.station==="result")return;const timer=window.setInterval(()=>dispatch({type:"TICK"}),250);return()=>window.clearInterval(timer)},[state.screen,state.station]);
-  const send=(action:Action)=>{if(state.sound&&action.type!=="TICK"&&typeof window!=="undefined"){const AudioCtor=window.AudioContext||(window as typeof window&{webkitAudioContext?:typeof AudioContext}).webkitAudioContext;if(AudioCtor){const context=new AudioCtor(),osc=context.createOscillator(),gain=context.createGain();const good=["ACCEPT","BAKE","TAKE_OUT","FINISH","NEXT"].includes(action.type);osc.type=good?"sine":"triangle";osc.frequency.value=good?620:["PLACE","ADD_SAUCE","ADD_CHEESE"].includes(action.type)?430:250;gain.gain.setValueAtTime(.045,context.currentTime);gain.gain.exponentialRampToValueAtTime(.001,context.currentTime+.075);osc.connect(gain).connect(context.destination);osc.start();osc.stop(context.currentTime+.075);osc.onended=()=>void context.close()}}dispatch(action)};
+  const send=(action:Action)=>{if(state.sound)playSfx(action);dispatch(action)};
   useEffect(()=>{document.documentElement.lang=state.language},[state.language]);
   if(state.screen==="home")return <PortfolioLanding state={state} dispatch={send}/>;
   if(state.screen==="gameMenu")return <GameMenu state={state} dispatch={send} hasSave={hasSave}/>;

@@ -101,3 +101,30 @@ test("game menu returns directly to the primary portfolio", () => {
   state = reduce(state, { type: "PORTFOLIO" });
   assert.equal(state.screen, "home");
 });
+
+test("delivery pauses every customer timer, arrivals and occupied ovens", () => {
+  let state = reduce(initialState, { type: "START" });
+  state = reduce(state, { type: "ACCEPT" });
+  state = reduce(state, { type: "BAKE" });
+  const ticksToArrival = Math.ceil(arrivalInterval(state.difficulty) / 0.25);
+  for (let index = 0; index < ticksToArrival; index += 1) state = reduce(state, { type: "TICK" });
+  const second = state.openOrders[1];
+  state = reduce(state, { type: "SWITCH_ORDER", index: second });
+  state = reduce(state, { type: "ACCEPT" });
+  state = reduce(state, { type: "BAKE" });
+  state = reduce(state, { type: "SWITCH_ORDER", index: state.openOrders[0] });
+  state = reduce(state, { type: "TAKE_OUT" });
+  state = reduce(state, { type: "FINISH" });
+  const before = {
+    arrivalClock: state.arrivalClock,
+    patience: state.orderProgress[second].patience,
+    cook: state.ovenSlots.find((slot) => slot.recipeIndex === second).cook,
+  };
+  state = reduce(state, { type: "TICK" });
+  assert.equal(state.arrivalClock, before.arrivalClock);
+  assert.equal(state.orderProgress[second].patience, before.patience);
+  assert.equal(state.ovenSlots.find((slot) => slot.recipeIndex === second).cook, before.cook);
+  state = reduce(state, { type: "NEXT" });
+  state = reduce(state, { type: "TICK" });
+  assert.ok(state.ovenSlots.find((slot) => slot.recipeIndex === second).cook > before.cook);
+});

@@ -16,9 +16,9 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
   manifest: "/site.webmanifest",
   icons: {
-    icon: [{ url: "/favicon.svg?v=2", type: "image/svg+xml" }],
-    shortcut: "/favicon.svg?v=2",
-    apple: "/favicon.svg?v=2",
+    icon: [{ url: "/github-avatar.png?v=5", type: "image/png", sizes: "512x512" }],
+    shortcut: "/github-avatar.png?v=5",
+    apple: "/github-avatar.png?v=5",
   },
   other: { "codex-preview": "development" },
   openGraph: {
