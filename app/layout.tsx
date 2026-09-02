@@ -12,6 +12,7 @@ export const metadata: Metadata = {
   applicationName: "Ignacio Schwindt — Portfolio",
   authors: [{ name: "Ignacio Schwindt", url: "https://github.com/igna-s" }],
   creator: "Ignacio Schwindt",
+  referrer: "strict-origin-when-cross-origin",
   keywords: ["Ignacio Schwindt", "computer engineer", "AI", "embedded systems", "quantum computing", "portfolio"],
   alternates: { canonical: "/" },
   manifest: "/site.webmanifest",
@@ -37,5 +38,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="es"><body>{children}</body></html>;
+  return <html lang="es"><head><meta httpEquiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; media-src 'self'; object-src 'none'; frame-src 'none'; base-uri 'self'; form-action 'self'"/></head><body>{children}</body></html>;
 }

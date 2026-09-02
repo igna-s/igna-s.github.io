@@ -156,26 +156,66 @@ function GameScreen({state,dispatch}:{state:GameState;dispatch:(a:Action)=>void}
     </section></div><footer className="game-footer"><span>{t.made}</span><span>{DIFFICULTIES[state.difficulty].name} · {recipe.project}</span><a href="mailto:ignacio.schwindt.dev@gmail.com">ignacio.schwindt.dev@gmail.com</a></footer></main>
 }
 
-function playSfx(action:Action){
-  if(typeof window==="undefined"||action.type==="TICK")return;
+type SfxCue=Action["type"]|"ARRIVAL"|"OVEN_PROGRESS"|"OVEN_READY"|"OVEN_BURNING"|"RESULT_LOW"|"RESULT_HIGH";
+type Tone={frequency:number;delay?:number;duration?:number;gain?:number;wave?:OscillatorType;endFrequency?:number};
+
+let sharedAudioContext:AudioContext|null=null;
+
+function getAudioContext(){
+  if(typeof window==="undefined")return null;
   const AudioCtor=window.AudioContext||(window as typeof window&{webkitAudioContext?:typeof AudioContext}).webkitAudioContext;
-  if(!AudioCtor)return;
-  const context=new AudioCtor();
-  const notes:Partial<Record<Action["type"],number[]>>={
-    ACCEPT:[392,523],PLACE:[230],ADD_SAUCE:[180,215],ADD_CHEESE:[260,310],BAKE:[150,205],
-    TAKE_OUT:[440,587],ADD_CUT:[320],AUTO_CUT:[330,440,550],FINISH:[523,659,784],NEXT:[660,880],
-    SWITCH_ORDER:[300],NAV_STATION:[250,300],RESTART_ORDER:[210,170],TOGGLE_OVEN:[190],
+  if(!AudioCtor)return null;
+  if(!sharedAudioContext||sharedAudioContext.state==="closed")sharedAudioContext=new AudioCtor();
+  if(sharedAudioContext.state==="suspended")void sharedAudioContext.resume();
+  return sharedAudioContext;
+}
+
+function playNoise(context:AudioContext,start:number,duration=.1,gainValue=.025){
+  const frames=Math.max(1,Math.floor(context.sampleRate*duration));
+  const buffer=context.createBuffer(1,frames,context.sampleRate),data=buffer.getChannelData(0);
+  for(let index=0;index<frames;index+=1)data[index]=(Math.random()*2-1)*(1-index/frames);
+  const source=context.createBufferSource(),filter=context.createBiquadFilter(),gain=context.createGain();
+  source.buffer=buffer;filter.type="bandpass";filter.frequency.value=1450;filter.Q.value=.8;
+  gain.gain.setValueAtTime(gainValue,start);gain.gain.exponentialRampToValueAtTime(.0001,start+duration);
+  source.connect(filter).connect(gain).connect(context.destination);source.start(start);source.stop(start+duration);
+}
+
+function playSfx(cue:SfxCue){
+  if(cue==="TICK")return;
+  const context=getAudioContext();if(!context)return;
+  const patterns:Partial<Record<SfxCue,Tone[]>>={
+    ACCEPT:[{frequency:392,duration:.12,wave:"triangle"},{frequency:523,delay:.1,duration:.18,wave:"triangle"}],
+    PLACE:[{frequency:250,duration:.06,wave:"triangle",endFrequency:185}],
+    ADD_SAUCE:[{frequency:135,duration:.16,wave:"sawtooth",endFrequency:92,gain:.025}],
+    ADD_CHEESE:[{frequency:720,duration:.04,wave:"square",gain:.012},{frequency:910,delay:.05,duration:.04,wave:"square",gain:.01},{frequency:780,delay:.1,duration:.04,wave:"square",gain:.01}],
+    BAKE:[{frequency:92,duration:.2,wave:"sine",endFrequency:58,gain:.05},{frequency:185,delay:.05,duration:.14,wave:"sawtooth",gain:.018}],
+    TAKE_OUT:[{frequency:330,duration:.08,wave:"triangle"},{frequency:494,delay:.07,duration:.16,wave:"triangle"}],
+    ADD_CUT:[{frequency:1180,duration:.055,wave:"sawtooth",endFrequency:520,gain:.018}],
+    AUTO_CUT:[{frequency:420,duration:.06},{frequency:560,delay:.07,duration:.06},{frequency:700,delay:.14,duration:.1}],
+    FINISH:[{frequency:523,duration:.1},{frequency:659,delay:.09,duration:.1},{frequency:784,delay:.18,duration:.22}],
+    NEXT:[{frequency:587,duration:.08,wave:"triangle"},{frequency:880,delay:.09,duration:.16,wave:"triangle"}],
+    SWITCH_ORDER:[{frequency:315,duration:.07,wave:"triangle",endFrequency:390}],NAV_STATION:[{frequency:220,duration:.045,wave:"square",gain:.014},{frequency:294,delay:.04,duration:.06,wave:"square",gain:.012}],
+    RESTART_ORDER:[{frequency:260,duration:.08,wave:"triangle"},{frequency:175,delay:.08,duration:.15,wave:"triangle"}],TOGGLE_OVEN:[{frequency:110,duration:.18,wave:"sawtooth",endFrequency:165,gain:.025}],
+    TOGGLE_SOUND:[{frequency:440,duration:.06},{frequency:660,delay:.07,duration:.12}],ARRIVAL:[{frequency:659,duration:.08,wave:"triangle"},{frequency:880,delay:.1,duration:.08,wave:"triangle"},{frequency:988,delay:.2,duration:.16,wave:"triangle"}],
+    OVEN_PROGRESS:[{frequency:176,duration:.055,wave:"sine",gain:.018}],OVEN_READY:[{frequency:523,duration:.08},{frequency:784,delay:.1,duration:.16}],OVEN_BURNING:[{frequency:210,duration:.12,wave:"square",gain:.02},{frequency:175,delay:.16,duration:.12,wave:"square",gain:.02},{frequency:210,delay:.32,duration:.16,wave:"square",gain:.02}],
+    RESULT_LOW:[{frequency:294,duration:.12,wave:"triangle"},{frequency:220,delay:.13,duration:.22,wave:"triangle"}],RESULT_HIGH:[{frequency:523,duration:.1},{frequency:659,delay:.1,duration:.1},{frequency:784,delay:.2,duration:.1},{frequency:1047,delay:.3,duration:.25}],
   };
-  const frequencies=notes[action.type]??[270];
-  frequencies.forEach((frequency,index)=>{const oscillator=context.createOscillator(),gain=context.createGain(),start=context.currentTime+index*.045;oscillator.type=["BAKE","TOGGLE_OVEN"].includes(action.type)?"sawtooth":action.type==="PLACE"?"triangle":"sine";oscillator.frequency.setValueAtTime(frequency,start);gain.gain.setValueAtTime(.035,start);gain.gain.exponentialRampToValueAtTime(.001,start+.11);oscillator.connect(gain).connect(context.destination);oscillator.start(start);oscillator.stop(start+.12);if(index===frequencies.length-1)oscillator.onended=()=>void context.close()});
+  const pattern=patterns[cue]??[{frequency:285,duration:.055,wave:"triangle",gain:.018}];
+  const now=context.currentTime+.015;
+  pattern.forEach(tone=>{const oscillator=context.createOscillator(),gain=context.createGain(),start=now+(tone.delay??0),duration=tone.duration??.1;oscillator.type=tone.wave??"sine";oscillator.frequency.setValueAtTime(tone.frequency,start);oscillator.frequency.exponentialRampToValueAtTime(tone.endFrequency??tone.frequency,start+duration);gain.gain.setValueAtTime(.0001,start);gain.gain.exponentialRampToValueAtTime(tone.gain??.032,start+.008);gain.gain.exponentialRampToValueAtTime(.0001,start+duration);oscillator.connect(gain).connect(context.destination);oscillator.start(start);oscillator.stop(start+duration+.02)});
+  if(["ADD_SAUCE","ADD_CHEESE","BAKE","TAKE_OUT","ADD_CUT","AUTO_CUT"].includes(cue))playNoise(context,now+.01,cue==="ADD_SAUCE"?.18:.08,cue==="BAKE"?.035:.018);
 }
 
 export default function Home(){
   const[state,dispatch]=useReducer(gameReducer,initialState);const[hasSave,setHasSave]=useState(false);
+  const previousOrderCount=useRef(state.openOrders.length),ovenStages=useRef<Record<number,number>>({}),previousResult=useRef(false);
   useEffect(()=>{const stored=localStorage.getItem(SAVE_KEY);if(!stored)return;try{const parsed=JSON.parse(stored) as Partial<GameState>;if(typeof parsed.recipeIndex==="number"&&Array.isArray(parsed.placements))window.setTimeout(()=>setHasSave(true),0);else localStorage.removeItem(SAVE_KEY)}catch{localStorage.removeItem(SAVE_KEY)}},[]);
   useEffect(()=>{if(state.screen==="game"&&state.station!=="result"){localStorage.setItem(SAVE_KEY,JSON.stringify(state));window.setTimeout(()=>setHasSave(true),0)}},[state]);
   useEffect(()=>{if(state.screen!=="game"||state.station==="result")return;const timer=window.setInterval(()=>dispatch({type:"TICK"}),250);return()=>window.clearInterval(timer)},[state.screen,state.station]);
-  const send=(action:Action)=>{if(state.sound)playSfx(action);dispatch(action)};
+  useEffect(()=>{const count=state.openOrders.length;if(state.sound&&state.screen==="game"&&count>previousOrderCount.current)playSfx("ARRIVAL");previousOrderCount.current=count},[state.openOrders.length,state.screen,state.sound]);
+  useEffect(()=>{for(const slot of state.ovenSlots){const stage=slot.recipeIndex===null?0:slot.cook>103?5:slot.cook>=76?4:slot.cook>=50?3:slot.cook>=25?2:slot.cook>0?1:0,previous=ovenStages.current[slot.slot]??0;if(state.sound&&stage>previous)playSfx(stage===5?"OVEN_BURNING":stage===4?"OVEN_READY":"OVEN_PROGRESS");ovenStages.current[slot.slot]=stage}},[state.ovenSlots,state.sound]);
+  useEffect(()=>{const showing=state.screen==="game"&&state.station==="result"&&Boolean(state.result);if(state.sound&&showing&&!previousResult.current)playSfx((state.result?.stars??0)>=2?"RESULT_HIGH":"RESULT_LOW");previousResult.current=showing},[state.result,state.screen,state.sound,state.station]);
+  const send=(action:Action)=>{if(state.sound||action.type==="TOGGLE_SOUND")playSfx(action.type);dispatch(action)};
   useEffect(()=>{document.documentElement.lang=state.language},[state.language]);
   if(state.screen==="home")return <PortfolioLanding state={state} dispatch={send}/>;
   if(state.screen==="gameMenu")return <GameMenu state={state} dispatch={send} hasSave={hasSave}/>;
