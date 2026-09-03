@@ -76,15 +76,17 @@
   .title-actions .button-primary{grid-column:1/-1;height:42px;min-height:42px;font-size:11px;padding:0 14px}
   .title-actions button{height:35px;min-height:35px;padding:0 8px;font-size:8px;gap:5px}
   .title-actions svg{width:13px}
-  .level-panel{position:static;width:100%;margin:0;padding:6px 8px 6px;transform:none;border-radius:6px;background:rgba(8,20,16,.96);box-shadow:0 6px 20px #0008;backdrop-filter:blur(10px)}
-  .panel-label{display:none}
-  .level-list{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin:0 0 5px}
-  .level-list button{min-height:36px;height:36px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2px 4px;gap:1px;text-align:center;border-radius:4px}
+  .level-panel{position:static;width:100%;margin:0;padding:6px 8px;transform:none;border-radius:6px;background:rgba(8,20,16,.96);box-shadow:0 6px 20px #0008;backdrop-filter:blur(10px)}
+  .panel-label{display:flex;justify-content:space-between;padding:0 2px 3px;border-bottom:0;font-size:7px;font-weight:800;color:#7e8f85;letter-spacing:.12em;text-transform:uppercase}
+  .panel-label span{color:#7e8f85}
+  .panel-label b{color:var(--gold);font-size:8px}
+  .level-list{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin:0 0 4px}
+  .level-list button{min-height:34px;height:34px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2px 4px;gap:1px;text-align:center;border-radius:4px}
   .level-list button>span,.level-list button>i,.level-list button>svg{display:none}
-  .level-list button>b{align-self:center;font-size:8px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
-  .level-list button>small{align-self:center;font-size:6.5px;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+  .level-list button>b{align-self:center;font-size:7.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+  .level-list button>small{align-self:center;font-size:6px;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
   .level-list button.active{border-color:var(--gold);background:#efb65325}
-  .pace-label{display:none}
+  .pace-label{display:block;margin:2px 2px 3px;font-size:7px;font-weight:800;color:#7e8f85;letter-spacing:.12em;text-transform:uppercase}
   .pace-switch{display:grid;grid-template-columns:repeat(3,1fr);margin:0;border-radius:4px;overflow:hidden}
   .pace-switch button{min-height:26px;height:26px;font-size:7px;padding:0}
   .credits-link{display:none}
