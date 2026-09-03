@@ -11,8 +11,6 @@ html:has(.classic-game),body:has(.classic-game){height:100%;overflow:hidden;over
 .v2-result{position:relative;width:min(780px,calc(100% - 40px));min-height:calc(100% - 40px);margin:20px auto;padding:35px;overflow:hidden;border:1px solid #e8b05055;background:linear-gradient(145deg,#17483b,#081611 72%);box-shadow:0 25px 60px #0008}.v2-result>span{color:var(--cg-gold);font-size:8px;font-weight:900;letter-spacing:.15em;text-transform:uppercase}.result-avatar{position:absolute;right:-15px;top:-15px;width:235px;height:235px;background-image:url('/customers.png');background-size:300% 200%;background-repeat:no-repeat;mask-image:linear-gradient(#000 55%,transparent)}.v2-result h2{position:relative;z-index:1;max-width:580px;margin:24px 0 10px;font:900 clamp(42px,5vw,72px)/.88 Georgia,serif;letter-spacing:-.05em}.v2-stars{display:flex;gap:4px;margin:15px 0}.v2-stars i{color:#3e5149;font:normal 26px/1 Georgia,serif}.v2-stars i.on{color:var(--cg-gold);text-shadow:0 2px 8px #d9952a88}.v2-score-grid{display:grid;gap:8px;max-width:570px;padding:17px 0;border-top:1px solid var(--cg-line);border-bottom:1px solid var(--cg-line)}.v2-score-grid>div{display:grid;grid-template-columns:95px 32px 1fr;align-items:center;gap:9px}.v2-score-grid span{color:#93a098;font-size:7px;font-weight:900;text-transform:uppercase}.v2-score-grid b{color:var(--cg-gold);font:900 9px/1 ui-monospace,monospace}.v2-score-grid i{height:6px;background:#25382f}.v2-score-grid em{display:block;height:100%;background:linear-gradient(90deg,#d45635,#edb34f)}.v2-result>strong{display:block;margin:20px 0;color:var(--cg-gold);font:900 34px/1 ui-monospace,monospace}.v2-result-actions{display:flex;gap:8px}.v2-result-actions button,.v2-result-actions a{min-height:48px;display:flex;align-items:center;justify-content:center;gap:8px;padding:0 16px;color:#25180d;border:0;background:var(--cg-gold);cursor:pointer;text-decoration:none;font-size:7px;font-weight:900;text-transform:uppercase}.v2-result-actions a{color:#fff;border:1px solid var(--cg-line);background:#fff05}.v2-result-actions svg{width:16px}.v2-food{display:block;flex:0 0 auto;background-repeat:no-repeat}.classic-footer{height:32px;display:flex;align-items:center;justify-content:space-between;padding:0 20px 0 108px;color:#73827a;background:#050d0b;font-size:7px;text-transform:uppercase}.classic-footer a{display:flex;align-items:center;gap:6px;color:#9ba7a1;text-decoration:none;text-transform:none}.classic-footer svg{width:13px}
 @keyframes classic-arrive{from{opacity:0;transform:translateX(-40px)}to{opacity:1;transform:none}}@keyframes topping-place{from{opacity:0;scale:1.6;rotate:-25deg}to{opacity:1}}
 @media(max-width:1120px){.classic-header{grid-template-columns:1fr auto}.classic-stats{display:none}.classic-floor{grid-template-columns:265px minmax(0,1fr)}.classic-ticket{padding:24px 18px}.classic-ticket h1{font-size:34px}.v2-prep-grid{grid-template-columns:1fr}.oven-deck{grid-template-columns:repeat(3,minmax(0,1fr))}.counter-scene{grid-template-columns:240px 1fr}.counter-customer{width:260px}.classic-tools button:last-child{font-size:0}.classic-tools button:last-child svg{margin:0}}
-@media(max-width:780px){.classic-footer{display:none}}
-@media(max-width:520px){.classic-brand small{display:none}.order-dock{grid-template-columns:76px 1fr}.arrival-clock span{font-size:6px}.arrival-clock svg{display:none}.order-tabs>button{min-width:155px;grid-template-columns:40px 1fr}.order-tabs>button>i{width:37px;height:44px}.classic-stations button>b{font-size:6px}.classic-stations button>em{right:4px;top:4px}.customer-order{padding:23px 18px}.customer-order h2{font-size:45px}.customer-order blockquote{font-size:15px}.work-banner{padding:0 12px}.work-banner>b{max-width:55%;text-align:right}.work-help{margin:10px 12px}.v2-prep-grid{padding:0 7px}.v2-pizza-wrap{width:min(83vw,350px)}.v2-pantry>div:nth-child(2){grid-template-columns:1fr}.v2-pantry>div>button{min-height:60px}.oven-deck{padding:8px 10px}.oven-control{margin:8px 10px;grid-template-columns:1fr}.oven-temp{justify-content:center}.oven-control>button{grid-row:auto}.cutting-table{margin:8px 10px;padding:7px}.cutting-table>aside{grid-template-columns:1fr}.v2-result-actions{display:grid}.v2-score-grid>div{grid-template-columns:78px 27px 1fr}}
 @media(prefers-reduced-motion:reduce){.counter-customer,.v2-piece{animation:none!important}}
 
 /* Navigation, live client feedback and real oven pizzas */
@@ -20,57 +18,655 @@ html:has(.classic-game),body:has(.classic-game){height:100%;overflow:hidden;over
 .live-feedback{flex:0 0 auto;min-height:58px;display:flex;align-items:center;gap:10px;padding:7px 17px;border-bottom:1px solid var(--cg-line);background:linear-gradient(90deg,#132c24,#0a1915)}.live-feedback>i{width:38px;height:42px;flex:0 0 auto;border:2px solid #d6a958;border-radius:50%;background-image:url('/customers.png');background-size:300% 200%;background-repeat:no-repeat}.live-feedback>span{font-size:7px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}.live-feedback>span b{display:block;margin-top:5px;color:#e8dfd0;font:italic 13px/1.25 Georgia,serif;letter-spacing:0;text-transform:none}.live-feedback>em{display:flex;align-items:center;gap:5px;margin-left:auto;padding:7px 9px;color:#2b1d10;background:#efb653;font:900 7px/1 ui-monospace,monospace}.live-feedback>em svg{width:12px}.live-feedback.paused{background:linear-gradient(90deg,#372617,#17241e)}
 .empty-station{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#56675f;text-align:center}.empty-station>span{color:#efb653;font:900 12px/1 ui-monospace,monospace}.empty-station>svg{width:58px;height:58px;margin:20px 0;color:#496158;stroke-width:1}.empty-station h2{margin:0;color:#b3beb8;font:800 35px/1 Georgia,serif}.empty-station p{margin:13px 0 0;color:#697a72;font-size:11px}
 .empty-station~.counter-scene,.empty-station~.v2-prep,.empty-station~.v2-ovens,.empty-station~.v2-cut-scene{display:none}
-/* Desktop: station containers fill the remaining work panel height */
-.counter-scene,.v2-prep,.v2-ovens,.v2-cut-scene,.v2-result{flex:1;min-height:0;overflow:hidden}
-.v2-prep{display:grid;grid-template-rows:auto auto minmax(0,1fr) auto}
-.v2-ovens{display:grid;grid-template-rows:auto minmax(0,1fr) auto;overflow:hidden}
-.v2-cut-scene{display:grid;grid-template-rows:auto minmax(0,1fr) auto;overflow:hidden}
-.v2-pantry{min-height:0;overflow:hidden;display:flex;flex-direction:column}
-.v2-pantry>div:nth-child(2){flex:1;min-height:0;overflow-y:auto}
-.oven-deck{min-height:0;overflow:hidden}
-.cutting-table{min-height:0;overflow:hidden}
+/* Desktop: clean layout without redundant banners */
+.work-banner, .work-help, .recipe-ribbon { display: none !important; }
+.counter-scene, .v2-prep, .v2-ovens, .v2-cut-scene, .v2-result { flex: 1; min-height: 0; overflow: hidden; }
+.v2-prep { display: grid; grid-template-rows: minmax(0, 1fr) auto; overflow: hidden; }
+.v2-ovens { display: grid; grid-template-rows: minmax(0, 1fr) auto; overflow: hidden; }
+.v2-cut-scene { display: grid; grid-template-rows: minmax(0, 1fr) auto; overflow: hidden; }
+.v2-pantry { min-height: 0; overflow: hidden; display: flex; flex-direction: column; }
+.v2-pantry>div:nth-child(2) { flex: 1; min-height: 0; overflow-y: auto; }
+.oven-deck { min-height: 0; overflow: hidden; }
+.cutting-table { min-height: 0; overflow: hidden; }
+.order-tabs, .oven-deck, .classic-stations {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+.order-tabs::-webkit-scrollbar,
+.oven-deck::-webkit-scrollbar,
+.classic-stations::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
 .oven-real-pizza{position:relative;z-index:2;width:155px;aspect-ratio:1;overflow:hidden;border:12px solid #c9823d;border-radius:50%;background:#e8bd66;box-shadow:0 12px 25px #0009,inset 0 0 0 3px #f2d17e;transform:perspective(300px) rotateX(50deg)}.oven-real-pizza>.v2-sauce,.oven-real-pizza>.v2-cheese,.oven-real-pizza>.v2-bake{position:absolute}.oven-real-pizza>.v2-piece{width:15%}.oven-real-pizza.burnt:after{content:"";position:absolute;z-index:8;inset:0;background:repeating-radial-gradient(circle at 22% 28%,#120a06 0 4px,transparent 5px 27px);opacity:.72;pointer-events:none}.oven-deck>button.loaded .oven-mouth{animation:oven-live .8s ease-in-out infinite alternate}.oven-deck>button.burning .oven-mouth{box-shadow:inset 0 0 65px #d83b20,0 0 18px #d83b2044}
 @keyframes oven-live{to{filter:brightness(1.08)}}
-@media(max-width:520px){.live-feedback{padding:7px 10px}.live-feedback>span b{font-size:11px}.live-feedback>em{font-size:6px}.oven-real-pizza{width:140px}}
 @media(prefers-reduced-motion:reduce){.oven-deck>button.loaded .oven-mouth{animation:none!important}}
 
-/* Touch and small-screen reliability */
-.order-tabs,.oven-deck{overscroll-behavior-inline:contain;scrollbar-width:thin}.order-tabs>button,.oven-deck>button{scroll-snap-align:start}.order-tabs{scroll-snap-type:x proximity}.classic-game button,.classic-game a{touch-action:manipulation;-webkit-tap-highlight-color:transparent}.v2-pizza{user-select:none;-webkit-user-select:none}.v2-pantry>div>button{touch-action:manipulation}.classic-work{overscroll-behavior:contain}
-@media(pointer:coarse){.classic-tools button{min-width:44px;min-height:44px}.classic-stations button{min-width:68px}.base-controls button,.oven-temp button,.oven-control>button,.v2-result-actions button,.v2-result-actions a{min-height:44px}.project-filters button,.intro-actions a,.intro-actions button,.site-actions button{min-height:44px}}
-@media(max-width:780px){.order-tabs{scroll-snap-type:x mandatory}.classic-stations{z-index:20;overflow-x:auto;overscroll-behavior-inline:contain}.classic-stations button{flex:1 0 25%}.classic-floor{padding-bottom:calc(14px + env(safe-area-inset-bottom))}.live-feedback{position:sticky;z-index:8;top:0}.oven-deck{scroll-snap-type:x mandatory}.profile-image img{object-position:center}.bridge-section,.process-section{overflow:hidden}}
-@media(max-width:380px){.classic-brand>b{font-size:13px}.classic-brand>span{width:34px;height:34px}.classic-tools button{min-width:38px;padding:0 4px}.order-tabs>button{min-width:145px}.classic-stations button{min-width:76px}.classic-stations button>b{max-width:65px;overflow:hidden;text-overflow:ellipsis}.live-feedback>i{width:34px;height:38px}.live-feedback>em{display:none}.v2-pizza-wrap{width:min(88vw,330px)}}
-@media(max-height:620px) and (orientation:landscape) and (max-width:960px){.classic-header{height:54px}.classic-brand>span{width:34px;height:34px}.order-dock{min-height:64px}.order-tabs>button{height:52px}.classic-stations{height:52px}.classic-stations button{min-height:52px;flex-direction:row}.classic-stations button>span{display:none}.classic-floor{min-height:560px}.counter-customer{height:250px}.pizza-bench{min-height:330px}.v2-pizza-wrap{width:min(58vh,320px)}}
+/* Touch and mobile reliability */
+.classic-game button, .classic-game a { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.v2-pizza { user-select: none; -webkit-user-select: none; }
+.v2-pantry>div>button { touch-action: manipulation; }
+.classic-work { overscroll-behavior: contain; }
 
-/* One-screen mobile kitchen: every station and primary action stays inside the viewport. */
-@media(max-width:780px){
-  html:has(.classic-game),body:has(.classic-game){height:100%;overflow:hidden;overscroll-behavior:none}
-  .classic-game{height:100dvh;min-height:100svh;display:grid;grid-template-rows:52px 58px 52px minmax(0,1fr);overflow:hidden;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
-  .classic-header{height:52px;min-height:0}.classic-brand{min-width:0;padding:0 9px;gap:8px}.classic-brand>span{width:34px;height:34px;flex:0 0 auto}.classic-brand svg{width:19px}.classic-brand>b{overflow:hidden;font-size:13px;white-space:nowrap;text-overflow:ellipsis}.classic-brand small{display:none}.classic-tools{padding:0 3px}.classic-tools button{min-width:38px!important;height:42px;min-height:42px!important;padding:0 5px}.classic-tools button:first-child{font-size:7px}.classic-tools svg{width:15px}
-  .order-dock{height:58px;min-height:0;grid-template-columns:70px minmax(0,1fr)}.arrival-clock{gap:4px;padding:0 7px}.arrival-clock svg{display:none}.arrival-clock span{font-size:5px}.arrival-clock b{margin-top:4px;font-size:13px}.order-tabs{gap:4px;padding:4px 5px}.order-tabs>button{min-width:142px;height:48px;grid-template-columns:34px 1fr;padding:3px 6px;gap:0 6px}.order-tabs>button>i{width:31px;height:38px;border-width:1px}.order-tabs>button>span{font-size:7px}.order-tabs>button small{font-size:5px}.order-tabs>button>em{max-width:65px;padding:2px 4px;font-size:5px}.order-tabs>button>strong{right:5px;top:4px;font-size:6px}
-  .classic-stations{position:static;z-index:20;width:100%;height:52px;min-height:0;overflow:hidden;flex-direction:row}.classic-stations button{flex:1 1 25%;min-width:0;min-height:52px;gap:3px}.classic-stations button>span{left:4px;top:4px;font-size:5px}.classic-stations button>svg{width:19px;height:19px}.classic-stations button>b{max-width:72px;overflow:hidden;font-size:5.5px;text-overflow:ellipsis;white-space:nowrap}.classic-stations button>em{right:4px;top:4px;min-width:15px;height:15px;font-size:6px}.classic-stations button.active:after{right:auto;bottom:-6px;width:12px;height:12px}
-  .classic-floor{height:auto;min-height:0;overflow:hidden;grid-template-columns:1fr;margin:0;padding:5px;background-position:center}.classic-ticket{display:none}.classic-work{height:100%;min-height:0;overflow:hidden;display:block}.classic-footer{display:none}
-  .live-feedback{height:44px;min-height:44px;padding:4px 8px;gap:7px}.live-feedback>i{width:31px;height:34px}.live-feedback>span{min-width:0;font-size:5.5px}.live-feedback>span b{max-width:70vw;overflow:hidden;margin-top:3px;font-size:10px;line-height:1.1;text-overflow:ellipsis;white-space:nowrap}.live-feedback>em{padding:5px 6px;font-size:5px;white-space:nowrap}
-  .classic-work>.counter-scene,.classic-work>.v2-prep,.classic-work>.v2-ovens,.classic-work>.v2-cut-scene,.classic-work>.v2-result,.classic-work>.empty-station{height:calc(100% - 44px);min-height:0}
-  .empty-station>svg{width:42px;height:42px;margin:12px}.empty-station h2{font-size:27px}.empty-station p{margin-top:8px;font-size:9px}
-  .counter-scene{grid-template-columns:minmax(100px,.72fr) minmax(0,1.28fr);align-items:end;gap:5px;padding:7px}.counter-sign{left:6px;top:6px;min-width:100px;padding:7px}.counter-sign>span,.counter-sign>small{font-size:5px}.counter-sign>b{margin:3px 0;font-size:20px}.counter-customer{width:100%;height:78%;min-height:0}.customer-order{align-self:center;padding:12px 10px}.customer-order:before{display:none}.customer-order>span{font-size:6px}.customer-order h2{margin:4px 0 7px;font-size:clamp(25px,9vw,38px)}.customer-order blockquote{margin:0 0 8px;font-size:11px;line-height:1.15}.customer-order>div{padding:7px;border-left-width:2px}.customer-order>div>small{font-size:5px}.customer-order>div>b{margin:4px 0 5px;font-size:13px}.mini-recipe{gap:3px}.mini-recipe>span{gap:2px;padding:2px 3px;font-size:5px}.mini-recipe .v2-food{width:18px;height:21px}.customer-order>button{height:38px;margin-top:7px;font-size:6px}
-  .v2-prep{display:grid;grid-template-rows:34px 40px minmax(0,1fr) 42px;overflow:hidden}.work-banner{height:34px;padding:0 8px}.work-banner>span{gap:5px;font-size:9px}.work-banner svg{width:14px}.work-banner>b{max-width:58%;padding:4px 5px;font-size:5px}.work-help{display:none}.recipe-ribbon{min-height:0;overflow:hidden;gap:3px;padding:3px}.recipe-ribbon>span{min-width:38px;font-size:5px}.recipe-ribbon>b{min-width:0;height:34px;flex:1 1 0;justify-content:center;gap:2px;overflow:hidden;padding:2px;font-size:5px;white-space:nowrap}.recipe-ribbon .v2-food{width:20px;height:24px}
-  .v2-prep-grid{height:auto;min-height:0;display:grid;grid-template-columns:1fr;grid-template-rows:minmax(122px,1fr) auto;gap:3px;overflow:hidden;padding:3px}.pizza-bench{min-height:0;overflow:hidden;border-width:3px}.v2-pizza-wrap{width:min(31dvh,54vw,215px);max-height:100%}.v2-pizza{width:88%;border-width:10px;box-shadow:0 8px 18px #371c0c99,inset 0 0 0 2px #f2d48b}.base-controls{width:min(88%,280px);gap:4px}.base-controls button{height:31px}.base-controls b,.base-controls em{font-size:5.5px}
-  .v2-pantry{overflow:hidden}.pantry-title{height:25px;padding:0 6px}.pantry-title b,.pantry-title span{font-size:6px}.v2-pantry>div:nth-child(2){grid-template-columns:repeat(4,minmax(0,1fr));gap:3px;padding:3px}.v2-pantry>div>button{position:relative;min-width:0;min-height:42px;grid-template-columns:27px minmax(0,1fr);gap:2px;padding:2px}.v2-pantry .v2-food{width:26px;height:31px}.v2-pantry button span{font-size:5px;white-space:nowrap;text-overflow:ellipsis}.v2-pantry button small{display:none}.v2-pantry button>b{position:absolute;right:2px;top:2px;min-width:14px;height:14px;font-size:5px}.pantry-undo{width:calc(100% - 6px);height:27px!important;min-height:27px!important;margin:0 3px 3px;font-size:5.5px}.pantry-undo svg{width:11px}
-  .work-action{height:38px;min-height:38px;margin:2px 3px 3px;padding:0 8px;font-size:6px}
-  .v2-ovens{display:grid;grid-template-rows:34px minmax(0,1fr) auto;overflow:hidden}.oven-deck{min-height:0;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;overflow:hidden;padding:4px}.oven-deck>button{min-width:0;min-height:0;padding:4px;border-width:2px}.oven-deck>button.selected{outline-width:2px;outline-offset:1px}.oven-plate{position:relative;height:35px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:3px}.oven-plate>span{font-size:5px}.oven-plate>b{position:absolute;right:3px;align-self:flex-end;padding:3px;font-size:8px}.oven-plate>i{font-size:5px}.oven-mouth{height:clamp(105px,22dvh,185px);margin:4px 0;border-width:5px}.oven-mouth>em{right:3px;top:3px;padding:3px;font-size:6px}.oven-mouth>svg{width:25px}.oven-real-pizza{width:min(21vw,82px);border-width:7px}.oven-deck>button>strong{font-size:5.5px}.oven-control{grid-template-columns:1fr 1fr;gap:3px;margin:3px;padding:4px}.oven-control>div:first-child{grid-column:1/3;gap:5px}.oven-control>div:first-child svg{width:13px}.oven-control>div:first-child span{font-size:6px}.oven-control>div:first-child small{margin-top:1px;font-size:5px}.oven-temp{justify-content:stretch}.oven-temp button,.oven-control>button{height:32px;min-height:32px!important;padding:0 5px;font-size:5.5px}.oven-temp button{width:29px}.oven-temp b{min-width:35px;flex:1;font-size:9px}.oven-control>.pull-pizza{grid-column:1/3}
-  .v2-cut-scene{display:grid;grid-template-rows:34px minmax(0,1fr) 42px;overflow:hidden}.cutting-table{min-height:0;grid-template-columns:minmax(0,1fr) 92px;align-items:center;gap:4px;overflow:hidden;margin:3px;padding:4px;border-width:4px}.cutting-table>.v2-pizza-wrap{width:min(38dvh,58vw,230px)}.cutting-table>aside{height:100%;min-height:0;padding:5px}.cutting-table>aside small{font-size:5px}.cutting-table>aside>b{margin-top:4px;font-size:38px}.cutting-table>aside>span{font-size:6px}.cutting-table>aside button{min-height:34px!important;margin-top:5px;padding:2px;font-size:5px}.cutting-table>aside svg{width:12px}
-  .v2-result{width:100%;margin:0;padding:13px}.result-avatar{right:-8px;top:-8px;width:115px;height:115px}.v2-result h2{max-width:72%;margin:9px 0 5px;font-size:clamp(25px,9vw,38px)}.v2-stars{margin:5px 0}.v2-stars i{font-size:19px}.v2-score-grid{gap:4px;max-width:100%;padding:7px 0}.v2-score-grid>div{grid-template-columns:70px 24px 1fr;gap:5px}.v2-score-grid span{font-size:5.5px}.v2-score-grid b{font-size:7px}.v2-result>strong{margin:8px 0;font-size:25px}.v2-result-actions{display:grid;grid-template-columns:1fr 1fr;gap:4px}.v2-result-actions button,.v2-result-actions a{min-height:38px;padding:0 7px;font-size:5.5px}
-}
+/* Mobile kitchen: fully contained, clean typography, NO 5px text, NO ugly scrollbars */
+@media (max-width: 780px) {
+  html:has(.classic-game), body:has(.classic-game) {
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+  .classic-game {
+    height: 100dvh;
+    min-height: 100svh;
+    display: grid;
+    grid-template-rows: 44px 48px 46px minmax(0, 1fr);
+    overflow: hidden;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .classic-footer { display: none !important; }
+  .classic-ticket { display: none !important; }
+  .work-banner, .work-help, .recipe-ribbon { display: none !important; }
 
-@media(max-width:780px) and (max-height:700px) and (orientation:portrait){
-  .classic-game{grid-template-rows:46px 50px 48px minmax(0,1fr)}.classic-header{height:46px}.classic-brand>span{width:31px;height:31px}.classic-tools button{height:38px;min-height:38px!important}.order-dock{height:50px}.order-tabs>button{height:42px}.order-tabs>button>i{height:34px}.classic-stations{height:48px}.classic-stations button{min-height:48px}.live-feedback{height:38px;min-height:38px}.live-feedback>i{width:27px;height:30px}.classic-work>.counter-scene,.classic-work>.v2-prep,.classic-work>.v2-ovens,.classic-work>.v2-cut-scene,.classic-work>.v2-result,.classic-work>.empty-station{height:calc(100% - 38px)}
-  .v2-prep{grid-template-rows:31px 35px minmax(0,1fr) 38px}.recipe-ribbon>b{height:29px}.recipe-ribbon .v2-food{width:17px;height:20px}.v2-pizza-wrap{width:min(25dvh,48vw,175px)}.v2-pantry>div>button{min-height:36px}.v2-pantry .v2-food{width:22px;height:27px}.pantry-undo{height:24px!important;min-height:24px!important}.work-action{height:34px;min-height:34px}.oven-mouth{height:95px}.oven-control>div:first-child{display:none}.oven-control>.pull-pizza{grid-column:auto}.v2-cut-scene{grid-template-rows:31px minmax(0,1fr) 38px}.cutting-table>.v2-pizza-wrap{width:min(30dvh,50vw,185px)}.v2-result{padding:8px}.v2-result h2{margin:4px 0;font-size:25px}.v2-score-grid{gap:2px;padding:4px 0}.v2-result>strong{margin:4px 0;font-size:20px}
-}
+  /* Header */
+  .classic-header {
+    height: 44px;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10px;
+    border-bottom: 1px solid var(--cg-line);
+    background: #06110e;
+  }
+  .classic-brand {
+    padding: 0;
+    gap: 8px;
+  }
+  .classic-brand>span {
+    width: 30px;
+    height: 30px;
+    flex: 0 0 auto;
+  }
+  .classic-brand svg { width: 16px; }
+  .classic-brand>b {
+    font-size: 13px;
+    white-space: nowrap;
+  }
+  .classic-brand small { display: none; }
+  .classic-stats { display: none; }
+  .classic-tools {
+    padding: 0;
+    gap: 4px;
+  }
+  .classic-tools button {
+    height: 32px;
+    padding: 0 7px;
+    font-size: 10px;
+    font-weight: 800;
+  }
+  .classic-tools svg { width: 14px; }
 
-@media(max-width:960px) and (max-height:620px) and (orientation:landscape){
-  html:has(.classic-game),body:has(.classic-game){height:100%;overflow:hidden}.classic-game{height:100dvh;min-height:100svh;display:grid;grid-template-rows:42px 0 42px minmax(0,1fr);overflow:hidden}.classic-header{height:42px}.order-dock{display:none}.classic-stations{position:static;width:100%;height:42px;flex-direction:row}.classic-stations button{min-height:42px;flex-direction:row}.classic-stations button>b{font-size:5px}.classic-floor{height:auto;min-height:0;overflow:hidden;margin:0;padding:4px}.classic-work{height:100%;min-height:0;overflow:hidden}.live-feedback{height:34px;min-height:34px}.live-feedback>i{width:26px;height:28px}.classic-work>.counter-scene,.classic-work>.v2-prep,.classic-work>.v2-ovens,.classic-work>.v2-cut-scene,.classic-work>.v2-result,.classic-work>.empty-station{height:calc(100% - 34px)}
-  .counter-scene{grid-template-columns:32% 1fr;padding:4px}.counter-customer{height:90%}.customer-order{display:grid;grid-template-columns:1fr auto;gap:4px;padding:7px}.customer-order h2,.customer-order blockquote,.customer-order>span{grid-column:1/3}.customer-order h2{font-size:25px}.customer-order blockquote{margin:0;font-size:9px}.customer-order>div{padding:4px}.customer-order>button{width:120px;height:auto;margin:0}.mini-recipe .v2-food{width:15px;height:18px}
-  .v2-prep{grid-template-rows:30px minmax(0,1fr) 34px}.recipe-ribbon,.work-help{display:none}.v2-prep-grid{grid-template-columns:minmax(180px,.8fr) minmax(280px,1.2fr);grid-template-rows:1fr}.pizza-bench{min-height:0}.v2-pizza-wrap{width:min(45vh,170px)}.v2-pantry>div:nth-child(2){grid-template-columns:repeat(4,minmax(0,1fr))}.v2-pantry>div>button{min-height:36px}.pantry-undo{height:23px!important;min-height:23px!important}.work-action{height:31px;min-height:31px}
-  .v2-ovens{grid-template-rows:30px minmax(0,1fr) 36px}.oven-deck>button{display:grid;grid-template-columns:72px 1fr;gap:4px}.oven-plate{height:auto}.oven-mouth{height:auto;min-height:105px;margin:0}.oven-control{grid-template-columns:auto 1fr auto auto;margin:2px;padding:2px}.oven-control>div:first-child{display:none}.oven-control>.pull-pizza{grid-column:auto}.oven-temp button,.oven-control>button{height:30px;min-height:30px!important}
-  .v2-cut-scene{grid-template-rows:30px minmax(0,1fr) 34px}.cutting-table{grid-template-columns:1fr 140px}.cutting-table>.v2-pizza-wrap{width:min(47vh,180px)}.cutting-table>aside{display:grid;grid-template-columns:1fr 1fr;gap:3px}.cutting-table>aside button{margin:0}.v2-result{padding:7px}.result-avatar{width:90px;height:90px}.v2-result h2{margin:3px 0;font-size:24px}.v2-stars{margin:2px}.v2-score-grid{grid-template-columns:1fr 1fr;gap:3px;padding:3px 0}.v2-result>strong{margin:3px 0;font-size:18px}.v2-result-actions button,.v2-result-actions a{min-height:31px}
+  /* Order dock */
+  .order-dock {
+    height: 48px;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: 66px minmax(0, 1fr);
+    overflow-y: hidden !important;
+    border-bottom: 1px solid var(--cg-line);
+    background: #0b201a;
+  }
+  .arrival-clock {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    padding: 0 6px;
+    border-right: 1px solid var(--cg-line);
+  }
+  .arrival-clock svg { display: none; }
+  .arrival-clock span {
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    color: #86968e;
+  }
+  .arrival-clock b {
+    margin: 0;
+    font-size: 13px;
+    color: #f0b755;
+  }
+  .order-tabs {
+    display: flex;
+    gap: 5px;
+    padding: 4px 6px;
+    align-items: center;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none !important;
+    scroll-snap-type: x mandatory;
+  }
+  .order-tabs::-webkit-scrollbar { display: none !important; }
+  .order-tabs>button {
+    min-width: 125px;
+    height: 40px;
+    display: grid;
+    grid-template-columns: 28px 1fr;
+    grid-template-rows: 1fr 1fr;
+    align-items: center;
+    gap: 0 6px;
+    padding: 2px 6px;
+    scroll-snap-align: start;
+  }
+  .order-tabs>button>i {
+    grid-row: 1 / 3;
+    width: 28px;
+    height: 34px;
+    border-width: 1px;
+    border-radius: 4px;
+  }
+  .order-tabs>button>span {
+    font-size: 10px;
+    font-weight: 800;
+  }
+  .order-tabs>button small { display: none; }
+  .order-tabs>button em {
+    font-size: 8px;
+    padding: 1px 4px;
+    margin-top: 1px;
+  }
+  .order-tabs>button>strong {
+    right: 4px;
+    top: 3px;
+    font-size: 9px;
+  }
+  .dock-capacity { display: none; }
+
+  /* Station navigation */
+  .classic-stations {
+    position: static;
+    width: 100%;
+    height: 46px;
+    min-height: 0;
+    display: flex;
+    flex-direction: row;
+    overflow: hidden;
+    border-right: 0;
+    border-bottom: 1px solid var(--cg-line);
+    background: #07130f;
+  }
+  .classic-stations button {
+    flex: 1 1 25%;
+    min-width: 0;
+    min-height: 46px;
+    gap: 2px;
+    padding: 2px;
+    border: 0;
+    border-right: 1px solid var(--cg-line);
+  }
+  .classic-stations button:last-child { border-right: 0; }
+  .classic-stations button>span { display: none; }
+  .classic-stations button>svg { width: 17px; height: 17px; }
+  .classic-stations button>b {
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+  }
+  .classic-stations button>em {
+    right: 3px;
+    top: 3px;
+    min-width: 16px;
+    height: 16px;
+    font-size: 9px;
+    font-weight: 900;
+  }
+  .classic-stations button.active:after { display: none; }
+
+  /* Floor and work area */
+  .classic-floor {
+    height: 100%;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: #07120f;
+  }
+  .classic-work {
+    flex: 1;
+    min-height: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 0;
+  }
+
+  /* Live feedback */
+  .live-feedback {
+    height: 38px;
+    min-height: 38px;
+    padding: 4px 10px;
+    gap: 8px;
+    flex: 0 0 auto;
+  }
+  .live-feedback>i {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+  }
+  .live-feedback>span {
+    font-size: 9px;
+    font-weight: 800;
+  }
+  .live-feedback>span b {
+    font-size: 11px;
+    font-style: italic;
+    margin-top: 2px;
+  }
+  .live-feedback>em {
+    padding: 3px 6px;
+    font-size: 8px;
+    font-weight: 800;
+  }
+
+  .classic-work>.counter-scene,
+  .classic-work>.v2-prep,
+  .classic-work>.v2-ovens,
+  .classic-work>.v2-cut-scene,
+  .classic-work>.v2-result,
+  .classic-work>.empty-station {
+    flex: 1;
+    min-height: 0;
+    height: calc(100% - 38px);
+    overflow: hidden;
+  }
+
+  /* RECEPTION (Mostrador) */
+  .counter-scene {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 10px;
+    gap: 8px;
+    overflow-y: auto;
+    background: radial-gradient(circle at 50% 25%, #27614e33, transparent 70%);
+  }
+  .counter-sign { display: none !important; }
+  .counter-customer {
+    width: min(120px, 32vw);
+    height: min(120px, 32vw);
+    margin: 0 auto;
+    flex: 0 0 auto;
+    border-radius: 12px;
+    background-size: 300% 200%;
+  }
+  .customer-order {
+    padding: 14px 12px;
+    border-radius: 6px;
+    margin: 0;
+    box-shadow: 0 10px 25px #0006;
+  }
+  .customer-order:before { display: none; }
+  .customer-order>span {
+    font-size: 9px;
+    font-weight: 800;
+  }
+  .customer-order h2 {
+    margin: 4px 0 6px;
+    font-size: 22px;
+    line-height: 1;
+  }
+  .customer-order blockquote {
+    margin: 0 0 10px;
+    font-size: 12px;
+    line-height: 1.35;
+  }
+  .customer-order>div {
+    padding: 8px 10px;
+  }
+  .customer-order>div>small {
+    font-size: 8px;
+    font-weight: 800;
+  }
+  .customer-order>div>b {
+    margin: 3px 0 6px;
+    font-size: 14px;
+  }
+  .mini-recipe { gap: 4px; }
+  .mini-recipe>span {
+    gap: 4px;
+    padding: 3px 6px;
+    font-size: 10px;
+    font-weight: 700;
+  }
+  .mini-recipe .v2-food {
+    width: 20px;
+    height: 24px;
+  }
+  .customer-order>button {
+    height: 44px;
+    margin-top: 10px;
+    font-size: 12px;
+    font-weight: 900;
+    border-radius: 4px;
+  }
+
+  /* PREP (Preparación) */
+  .v2-prep {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 6px 8px 8px;
+    gap: 6px;
+    overflow: hidden;
+  }
+  .v2-prep-grid {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    gap: 6px;
+    padding: 0;
+    overflow: hidden;
+  }
+  .pizza-bench {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-width: 4px;
+    padding: 4px;
+    gap: 4px;
+  }
+  .v2-pizza-wrap {
+    width: min(28vh, 180px);
+    aspect-ratio: 1;
+    margin: auto;
+  }
+  .v2-pizza {
+    width: 90%;
+    border-width: 9px;
+  }
+  .base-controls {
+    width: min(92%, 260px);
+    gap: 6px;
+  }
+  .base-controls button {
+    height: 34px;
+  }
+  .base-controls b, .base-controls em {
+    font-size: 10px;
+    font-weight: 800;
+  }
+  .v2-pantry {
+    flex: 0 0 auto;
+    border-width: 1px;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .pantry-title {
+    height: 26px;
+    padding: 0 8px;
+  }
+  .pantry-title b { font-size: 10px; }
+  .pantry-title span { font-size: 10px; font-weight: 800; }
+  .v2-pantry>div:nth-child(2) {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    padding: 4px;
+    max-height: 105px;
+    overflow-y: auto;
+  }
+  .v2-pantry>div>button {
+    position: relative;
+    min-height: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 4px;
+  }
+  .v2-pantry .v2-food {
+    width: 24px;
+    height: 28px;
+    flex: 0 0 auto;
+  }
+  .v2-pantry button span {
+    font-size: 9px;
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .v2-pantry button small { display: none; }
+  .v2-pantry button>b {
+    position: absolute;
+    right: 2px;
+    top: 2px;
+    min-width: 15px;
+    height: 15px;
+    font-size: 9px;
+    font-weight: 900;
+  }
+  .pantry-undo {
+    width: calc(100% - 8px);
+    height: 28px !important;
+    min-height: 28px !important;
+    margin: 0 4px 4px;
+    font-size: 10px;
+    font-weight: 800;
+  }
+  .work-action {
+    height: 44px;
+    min-height: 44px;
+    margin: 0;
+    padding: 0 14px;
+    font-size: 12px;
+    font-weight: 900;
+    border-radius: 4px;
+    flex: 0 0 auto;
+  }
+
+  /* OVENS (Hornos) */
+  .v2-ovens {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 6px 8px 8px;
+    gap: 6px;
+    overflow: hidden;
+  }
+  .oven-deck {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    padding: 0;
+    overflow: hidden;
+  }
+  .oven-deck>button {
+    min-height: 0;
+    padding: 6px;
+    border-width: 2px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .oven-plate {
+    position: relative;
+    height: 32px;
+    padding: 2px 4px;
+  }
+  .oven-plate>span { font-size: 8px; font-weight: 800; }
+  .oven-plate>b {
+    right: 2px;
+    top: 2px;
+    font-size: 9px;
+    padding: 2px 4px;
+  }
+  .oven-plate>i { font-size: 8px; }
+  .oven-mouth {
+    flex: 1;
+    min-height: 80px;
+    margin: 4px 0;
+    border-width: 6px;
+  }
+  .oven-mouth>em {
+    right: 4px;
+    top: 4px;
+    padding: 2px 5px;
+    font-size: 9px;
+    font-weight: 800;
+  }
+  .oven-real-pizza {
+    width: min(20vw, 85px);
+    border-width: 7px;
+  }
+  .oven-deck>button>strong {
+    font-size: 9px;
+    font-weight: 800;
+  }
+  .oven-control {
+    flex: 0 0 auto;
+    margin: 0;
+    padding: 6px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .oven-control>div:first-child {
+    grid-column: 1 / 3;
+    gap: 6px;
+  }
+  .oven-control>div:first-child svg { width: 15px; }
+  .oven-control>div:first-child span { font-size: 11px; font-weight: 800; }
+  .oven-control>div:first-child small { font-size: 9px; }
+  .oven-temp { justify-content: stretch; }
+  .oven-temp button, .oven-control>button {
+    height: 38px;
+    min-height: 38px !important;
+    font-size: 11px;
+    font-weight: 800;
+  }
+  .oven-temp b {
+    flex: 1;
+    font-size: 13px;
+  }
+  .oven-control>.pull-pizza {
+    grid-column: 1 / 3;
+    height: 42px;
+    font-size: 12px;
+    font-weight: 900;
+  }
+
+  /* CUT (Corte) */
+  .v2-cut-scene {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 6px 8px 8px;
+    gap: 6px;
+    overflow: hidden;
+  }
+  .cutting-table {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 115px;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    padding: 6px;
+    border-width: 5px;
+  }
+  .cutting-table>.v2-pizza-wrap {
+    width: min(34vh, 200px);
+    aspect-ratio: 1;
+    margin: auto;
+  }
+  .cutting-table>aside {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 8px;
+  }
+  .cutting-table>aside small {
+    font-size: 9px;
+    font-weight: 800;
+  }
+  .cutting-table>aside>b {
+    margin: 4px 0 0;
+    font-size: 38px;
+    line-height: 0.9;
+  }
+  .cutting-table>aside>span {
+    font-size: 9px;
+    font-weight: 800;
+  }
+  .cutting-table>aside button {
+    min-height: 36px !important;
+    margin-top: 6px;
+    font-size: 10px;
+    font-weight: 800;
+  }
+
+  /* RESULT */
+  .v2-result {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow-y: auto;
+  }
+  .result-avatar {
+    right: 10px;
+    top: 10px;
+    width: 80px;
+    height: 80px;
+  }
+  .v2-result h2 {
+    margin: 8px 0;
+    font-size: 24px;
+    max-width: 70%;
+  }
+  .v2-stars { margin: 6px 0; }
+  .v2-stars i { font-size: 22px; }
+  .v2-score-grid {
+    gap: 5px;
+    padding: 8px 0;
+  }
+  .v2-score-grid>div {
+    grid-template-columns: 80px 30px 1fr;
+    gap: 6px;
+  }
+  .v2-score-grid span { font-size: 10px; font-weight: 800; }
+  .v2-score-grid b { font-size: 10px; }
+  .v2-result>strong {
+    margin: 8px 0;
+    font-size: 26px;
+  }
+  .v2-result-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .v2-result-actions button, .v2-result-actions a {
+    min-height: 44px;
+    font-size: 11px;
+    font-weight: 800;
+  }
 }
