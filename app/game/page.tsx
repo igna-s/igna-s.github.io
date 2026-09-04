@@ -35,9 +35,9 @@ export function GameMenu({ state, dispatch, hasSave }: { state: GameState; dispa
         <span className="title-brand-badge">
           <ChefHat /> <span>IGNACIO&apos;S DEV PIZZERIA</span>
         </span>
-        <div className="lang-switch" aria-label={t.language}>
-          <button className={state.language === "es" ? "active" : ""} onClick={() => dispatch({ type: "LANG", language: "es" })}>ES</button>
-          <button className={state.language === "en" ? "active" : ""} onClick={() => dispatch({ type: "LANG", language: "en" })}>EN</button>
+        <div className="lang-switch" role="group" aria-label={t.language}>
+          <button type="button" className={state.language === "en" ? "active" : ""} onClick={() => dispatch({ type: "LANG", language: "en" })} aria-pressed={state.language === "en"}>EN</button>
+          <button type="button" className={state.language === "es" ? "active" : ""} onClick={() => dispatch({ type: "LANG", language: "es" })} aria-pressed={state.language === "es"}>ES</button>
         </div>
       </header>
 
@@ -309,6 +309,16 @@ export default function GamePage() {
   };
 
   useEffect(() => {
+    const savedLang = localStorage.getItem("portfolio-lang");
+    if (savedLang === "es" || savedLang === "en") {
+      if (savedLang !== state.language) {
+        dispatch({ type: "LANG", language: savedLang });
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("portfolio-lang", state.language);
     document.documentElement.lang = state.language;
   }, [state.language]);
 

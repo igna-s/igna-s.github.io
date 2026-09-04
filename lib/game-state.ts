@@ -61,7 +61,7 @@ const blankOrder=(difficulty:DifficultyKey):OrderProgress=>({
 });
 
 export const initialState:GameState={
-  ...blankOrder("service"),screen:"home",previousScreen:"home",language:"es",difficulty:"service",
+  ...blankOrder("service"),screen:"home",previousScreen:"home",language:"en",difficulty:"service",
   recipeIndex:0,shiftScore:0,sound:true,openOrders:[0],completedOrders:[],orderProgress:{},
   ovenSlots:emptyOvens(),arrivalClock:0,nextArrivalIndex:1,
 };
