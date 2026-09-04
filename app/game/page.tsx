@@ -27,9 +27,12 @@ export function GameMenu({ state, dispatch, hasSave }: { state: GameState; dispa
       <div className="facade" aria-hidden="true" />
       <div className="title-shade" aria-hidden="true" />
       <header className="title-topbar">
-        <Link href="/" className="title-brand" title={t.backHome}>
-          <ChefHat /> <span>IGNACIO&apos;S DEV PIZZERIA</span>
+        <Link href="/" className="title-back-home" title={t.backHome}>
+          <ArrowLeft /> <span>{t.backHome}</span>
         </Link>
+        <span className="title-brand-badge">
+          <ChefHat /> <span>IGNACIO&apos;S DEV PIZZERIA</span>
+        </span>
         <div className="lang-switch" aria-label={t.language}>
           <button className={state.language === "es" ? "active" : ""} onClick={() => dispatch({ type: "LANG", language: "es" })}>ES</button>
           <button className={state.language === "en" ? "active" : ""} onClick={() => dispatch({ type: "LANG", language: "en" })}>EN</button>
@@ -157,10 +160,16 @@ export function Portfolio({ state, dispatch }: { state: GameState; dispatch: (a:
   return (
     <main className="portfolio-screen">
       <header className="portfolio-header">
-        <button onClick={() => dispatch({ type: "CLOSE_PORTFOLIO" })}>
-          <ArrowLeft />
-          {t.back}
-        </button>
+        <div className="portfolio-header-nav">
+          <button onClick={() => dispatch({ type: "CLOSE_PORTFOLIO" })}>
+            <ArrowLeft />
+            {t.back}
+          </button>
+          <Link href="/" className="portfolio-home-pill">
+            <ChefHat size={14} />
+            <span>{t.backHome}</span>
+          </Link>
+        </div>
         <div>
           <small>STACK &amp; SLICE</small>
           <b>IGNACIO SCHWINDT · COMPUTER ENGINEER</b>
@@ -299,6 +308,12 @@ export default function GamePage() {
   useEffect(() => {
     document.documentElement.lang = state.language;
   }, [state.language]);
+
+  useEffect(() => {
+    if (state.screen === "home") {
+      window.location.href = "/";
+    }
+  }, [state.screen]);
 
   if (state.screen === "portfolio") return <Portfolio state={state} dispatch={send} />;
   if (state.screen === "game") return <GameScreenV2 state={state} dispatch={send} />;

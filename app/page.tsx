@@ -4,20 +4,18 @@ import {
   ArrowLeft, ArrowRight, Check, ChefHat, CircleHelp, Clock3, Contact, Flame, GitBranch,
   Globe2, Languages, Minus, Pause, Play, Plus, RotateCcw, Scissors,
   Settings, Sparkles, Star, Store, Thermometer, Trash2, Trophy, UserRound,
-  Volume2, VolumeX, X,
+  Volume2, VolumeX, Wind, X,
 } from "lucide-react";
 import type { CSSProperties, DragEvent as ReactDragEvent, PointerEvent as ReactPointerEvent } from "react";
 import { useEffect, useMemo, useReducer, useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { DIFFICULTIES, INGREDIENTS, RECIPES, ingredientById, toppingSpriteById, type DifficultyKey, type Recipe } from "@/lib/game-data";
 import { type Cut, type Placement } from "@/lib/game-engine";
 import { gameReducer, initialState, isPrepComplete, SAVE_KEY, type Action, type GameState, type Language } from "@/lib/game-state";
 import GameScreenV2 from "./GameScreenV2";
 
-const copy={
-  es:{play:"Jugar turno",portfolio:"Portfolio rápido",resume:"Continuar partida",settings:"Ajustes",credits:"Créditos",selectLevel:"Elegí una receta inicial",selectPace:"Ritmo de servicio",premise:"Construyo el puente entre la lógica de alto nivel y las señales de bajo nivel.",homeNote:"Un portfolio que se entiende jugando.",reception:"Recepción",prep:"Preparación",oven:"Horno",cut:"Corte",order:"Comanda",queue:"en espera",patience:"Paciencia",accept:"Tomar pedido",requested:"El cliente pidió",sauce:"Salsa",cheese:"Queso",toppings:"Componentes / toppings",prepHelp:"Aplicá salsa y queso. Después elegí cada componente y colocá al menos 3 piezas bien distribuidas.",selected:"Topping seleccionado",undo:"Deshacer último",bake:"Enviar al horno",missing:"Completá cobertura y componentes",heat:"Temperatura",ovenHelp:"Controlá la temperatura y retirala cuando la cocción esté en la zona perfecta. Si te distraés, se quema.",pause:"Pausar horno",resumeOven:"Encender horno",remove:"Retirar pizza",raw:"Cruda",cooking:"Cocinando",perfect:"En su punto",burning:"¡Se quema!",burnt:"Quemada",cutHelp:"Arrastrá el cortador cruzando el centro. Hacé cortes parejos para obtener las porciones pedidas.",precise:"Corte accesible preciso",deliver:"Entregar proyecto",slices:"porciones",result:"Servicio completado",orderScore:"Pedido",distribution:"Distribución",bakeScore:"Cocción",cutScore:"Corte",service:"Servicio",next:"Siguiente cliente",openRepo:"Abrir proyecto real",restart:"Rehacer pedido",total:"Puntaje total",projects:"Proyectos seleccionados",stack:"Stack completo",back:"Volver al juego",viewCode:"Ver código",language:"Idioma",sound:"Sonido",made:"Diseño, arte y código originales",level:"Nivel"},
-  en:{play:"Start shift",portfolio:"Quick portfolio",resume:"Continue game",settings:"Settings",credits:"Credits",selectLevel:"Choose a starting recipe",selectPace:"Service pace",premise:"I bridge the gap between high-level logic and low-level signals.",homeNote:"A portfolio you understand by playing.",reception:"Front counter",prep:"Preparation",oven:"Oven",cut:"Cut",order:"Order ticket",queue:"waiting",patience:"Patience",accept:"Take order",requested:"The customer ordered",sauce:"Sauce",cheese:"Cheese",toppings:"Components / toppings",prepHelp:"Apply sauce and cheese. Then choose every component and place at least 3 pieces with good distribution.",selected:"Selected topping",undo:"Undo last",bake:"Send to oven",missing:"Complete coverage and components",heat:"Temperature",ovenHelp:"Control the heat and pull the pizza in the perfect zone. Leave it too long and it will burn.",pause:"Pause oven",resumeOven:"Start oven",remove:"Pull pizza",raw:"Raw",cooking:"Cooking",perfect:"Perfect",burning:"Burning!",burnt:"Burnt",cutHelp:"Drag the cutter across the center. Make even cuts for the requested number of slices.",precise:"Accessible precision cut",deliver:"Deliver project",slices:"slices",result:"Service complete",orderScore:"Order",distribution:"Distribution",bakeScore:"Bake",cutScore:"Cut",service:"Service",next:"Next customer",openRepo:"Open real project",restart:"Redo order",total:"Total score",projects:"Selected projects",stack:"Full stack",back:"Back to game",viewCode:"View code",language:"Language",sound:"Sound",made:"Original design, art and code",level:"Level"}
-};
+import { copy } from "@/lib/game-copy";
 
 function avatarStyle(index:number):CSSProperties{return{backgroundPosition:`${(index%3)*50}% ${Math.floor(index/3)*100}%`}}
 function spriteStyle(id:string):CSSProperties{
@@ -73,15 +71,30 @@ function PortfolioLanding({state,dispatch}:{state:GameState;dispatch:(a:Action)=
     intro:"Diseño y construyo productos inteligentes de punta a punta: desde agentes y retrieval hasta sistemas embebidos, experiencias 3D y hardware interactivo.",
     viewProjects:"Ver proyectos",play:"Entrar al minijuego",source:"GitHub",bridgeTag:"La idea detrás del puente",bridgeTitle:"Software que piensa. Hardware que interactúa.",bridgeText:"Mi trabajo vive entre dos orillas: modelos y producto de un lado; señales, sensores y sistemas físicos del otro. La ingeniería es el puente que los vuelve una sola experiencia.",
     hl1:"IA aplicada sin fricción",hl2:"Firmware y tiempo real",hl3:"Arquitectura full-stack",hl4:"Interacción sensorial",
-    droneTitle:"SOFTWARE & HARDWARE",droneSub:"SISTEMA EN TIEMPO REAL",droneLive:"EN VIVO",
-    droneSoftwareLabel:"Software",droneHardwareLabel:"Hardware",droneStatusLabel:"Estado",
-    droneSoftwareNormal:"Control de balance",droneSoftwareWind:"Calcula corrección",
-    droneHardwareNormal:"4 motores activos",droneHardwareWind:"Compensa empuje",
-    droneStable:"Estable",droneCorrecting:"Estabilizando",
-    droneHubTitle:"SOFTWARE",droneHubNormal:"NIVELADO",droneHubWind:"CORRIGIENDO",
-    droneSpec1Title:"Software",droneSpec1Text:"La lógica detecta la inclinación y calcula la respuesta necesaria.",
-    droneSpec2Title:"Hardware",droneSpec2Text:"Los motores actúan en el mundo físico para mantener el equilibrio.",
-    droneHint:"⚡ Tocá para simular viento y ver la respuesta del sistema",
+    droneTopTag:"00 / SISTEMA EN TIEMPO REAL",
+    droneStatusNormal:"SISTEMA EN EQUILIBRIO",
+    droneStatusWind:"COMPENSANDO RÁFAGA",
+    droneCardQuote:"El software calcula la corrección en microsegundos; el hardware actúa en el mundo físico para mantener el equilibrio.",
+    droneSoftwareLabel:"Software",
+    droneSoftwareNormal:"Control de balance",
+    droneSoftwareWind:"Calcula corrección",
+    droneSoftwareSubNormal:"Lazo cerrado",
+    droneSoftwareSubWind:"Cálculo en ~2ms",
+    droneHardwareLabel:"Hardware",
+    droneHardwareNormal:"4 motores activos",
+    droneHardwareWind:"Empuje diferencial",
+    droneHardwareSubNormal:"Giro nominal",
+    droneHardwareSubWind:"Compensando al 95%",
+    droneStatusLabel:"Estado",
+    droneStable:"Estable",
+    droneCorrecting:"Estabilizando",
+    droneStatusSubNormal:"Inclinación 0.0°",
+    droneStatusSubWind:"Inclinación +3.8°",
+    droneHubLabel:"SOFTWARE",
+    droneHubNormal:"NIVELADO",
+    droneHubWind:"CORRIGIENDO",
+    droneCtaNormal:"Simular perturbación de viento",
+    droneCtaWind:"Estabilizando sistema...",
     software:"Lógica de alto nivel",softwareText:"Agentes, RAG, productos full-stack e interfaces inteligentes.",hardware:"Señales de bajo nivel",hardwareText:"Sistemas embebidos, sensores, tiempo real e interacción física.",process:"Proceso",processTitle:"Explorar, diseñar, construir y validar.",
     selected:"Trabajo seleccionado",selectedNote:"Proyectos reales, decisiones técnicas concretas y código para explorar.",
     all:"Todos",ai:"IA + datos",systems:"Sistemas",interactive:"Interactivos",open:"Abrir repositorio",archive:"Ver los 8 proyectos",
@@ -99,15 +112,30 @@ function PortfolioLanding({state,dispatch}:{state:GameState;dispatch:(a:Action)=
     intro:"I design and build intelligent products end to end—from agents and retrieval to embedded systems, 3D experiences, and interactive hardware.",
     viewProjects:"View projects",play:"Enter the mini-game",source:"GitHub",bridgeTag:"The thinking behind the bridge",bridgeTitle:"Software that thinks. Hardware that interacts.",bridgeText:"My work lives between two shores: models and product on one side; signals, sensors, and physical systems on the other. Engineering is the bridge that turns them into one experience.",
     hl1:"Frictionless applied AI",hl2:"Real-time & firmware",hl3:"Full-stack architecture",hl4:"Sensory interaction",
-    droneTitle:"SOFTWARE & HARDWARE",droneSub:"REAL-TIME SYSTEM",droneLive:"LIVE",
-    droneSoftwareLabel:"Software",droneHardwareLabel:"Hardware",droneStatusLabel:"Status",
-    droneSoftwareNormal:"Balance control",droneSoftwareWind:"Computing correction",
-    droneHardwareNormal:"4 active motors",droneHardwareWind:"Compensating thrust",
-    droneStable:"Stable",droneCorrecting:"Stabilizing",
-    droneHubTitle:"SOFTWARE",droneHubNormal:"LEVEL",droneHubWind:"ADJUSTING",
-    droneSpec1Title:"Software",droneSpec1Text:"The logic senses tilt and calculates the required response.",
-    droneSpec2Title:"Hardware",droneSpec2Text:"Physical motors act in real time to preserve balance.",
-    droneHint:"⚡ Click to simulate wind and watch the system respond",
+    droneTopTag:"00 / REAL-TIME SYSTEM",
+    droneStatusNormal:"SYSTEM IN EQUILIBRIUM",
+    droneStatusWind:"COMPENSATING GUST",
+    droneCardQuote:"Software computes the correction in microseconds; hardware acts in the physical world to maintain balance.",
+    droneSoftwareLabel:"Software",
+    droneSoftwareNormal:"Balance control",
+    droneSoftwareWind:"Computing correction",
+    droneSoftwareSubNormal:"Closed loop",
+    droneSoftwareSubWind:"Calculated in ~2ms",
+    droneHardwareLabel:"Hardware",
+    droneHardwareNormal:"4 active motors",
+    droneHardwareWind:"Differential thrust",
+    droneHardwareSubNormal:"Nominal spin",
+    droneHardwareSubWind:"Compensating at 95%",
+    droneStatusLabel:"Status",
+    droneStable:"Stable",
+    droneCorrecting:"Stabilizing",
+    droneStatusSubNormal:"Tilt angle 0.0°",
+    droneStatusSubWind:"Tilt angle +3.8°",
+    droneHubLabel:"SOFTWARE",
+    droneHubNormal:"LEVEL",
+    droneHubWind:"ADJUSTING",
+    droneCtaNormal:"Simulate wind gust perturbation",
+    droneCtaWind:"Stabilizing system...",
     software:"High-level logic",softwareText:"Agents, RAG, full-stack products, and intelligent interfaces.",hardware:"Low-level signals",hardwareText:"Embedded systems, sensors, real time, and physical interaction.",process:"Process",processTitle:"Explore, design, build, and validate.",
     selected:"Selected work",selectedNote:"Real projects, concrete technical decisions, and code ready to explore.",
     all:"All",ai:"AI + data",systems:"Systems",interactive:"Interactive",open:"Open repository",archive:"View all 8 projects",
@@ -128,11 +156,11 @@ function PortfolioLanding({state,dispatch}:{state:GameState;dispatch:(a:Action)=
     <header className="site-header">
       <a className="site-brand" href="#top" aria-label="Ignacio Schwindt — home"><span>IS</span><b>IGNACIO SCHWINDT</b></a>
       <nav aria-label={es?"Navegación principal":"Main navigation"}><a href="#projects">{text.navProjects}</a><a href="#expertise">{text.navExpertise}</a><a href="#game">{text.navGame}</a><a href="#contact">{text.navContact}</a></nav>
-      <div className="site-actions"><button onClick={()=>dispatch({type:"LANG",language:es?"en":"es"})} aria-label={text.language}><Globe2/>{es?"EN":"ES"}</button><button className="nav-game" onClick={()=>window.location.href="/game"}><Play/>{es?"Jugar":"Play"}</button></div>
+      <div className="site-actions"><button onClick={()=>dispatch({type:"LANG",language:es?"en":"es"})} aria-label={text.language}><Globe2/>{es?"EN":"ES"}</button><Link className="nav-game" href="/game/"><Play/>{es?"Jugar":"Play"}</Link></div>
     </header>
     <main id="main-content">
       <section className="portfolio-intro" id="top">
-        <div className="intro-copy"><span className="portfolio-kicker"><i/> {text.kicker}</span><h1>{text.titleA}<br/><em>{text.titleB}</em><br/>{text.titleC}</h1><p>{text.intro}</p><div className="intro-actions"><a className="primary-link" href="#projects">{text.viewProjects}<ArrowRight/></a><button onClick={()=>window.location.href="/game"}><Play/>{text.play}</button><a href="https://github.com/igna-s" target="_blank" rel="noreferrer"><GitBranch/>{text.source}</a></div></div>
+        <div className="intro-copy"><span className="portfolio-kicker"><i/> {text.kicker}</span><h1>{text.titleA}<br/><em>{text.titleB}</em><br/>{text.titleC}</h1><p>{text.intro}</p><div className="intro-actions"><a className="primary-link" href="#projects">{text.viewProjects}<ArrowRight/></a><Link className="intro-play-link" href="/game/"><Play/>{text.play}</Link><a href="https://github.com/igna-s" target="_blank" rel="noreferrer"><GitBranch/>{text.source}</a></div></div>
         <aside className="intro-console profile-console" aria-label={es?"Perfil profesional de Ignacio":"Ignacio's professional profile"}><div className="console-top"><span>GITHUB / @IGNA-S</span><i>ARGENTINA</i></div><div className="profile-image"><Image src="/github-avatar.png" alt={es?"Puente blanco sobre el río, imagen de perfil de Ignacio en GitHub":"White bridge over the river, Ignacio's GitHub profile image"} width={512} height={512} priority unoptimized/><span>{es?"CONECTAR ES CONSTRUIR":"CONNECTING IS BUILDING"}</span></div><p>{es?"Conecto ideas ambiciosas con ingeniería ejecutable.":"I connect ambitious ideas with executable engineering."}</p><div className="console-metrics"><span><b>{RECIPES.length}</b>{es?"proyectos":"projects"}</span><span><b>{INGREDIENTS.length}</b>{es?"tecnologías":"technologies"}</span><span><b>04</b>{es?"dominios":"domains"}</span></div><div className="console-line"/></aside>
       </section>
       <div className="domain-strip" aria-label={es?"Áreas de trabajo":"Areas of work"}><span>APPLIED AI</span><i/> <span>FULL-STACK</span><i/> <span>QUANTUM</span><i/> <span>EMBEDDED</span><i/> <span>INTERACTIVE SYSTEMS</span></div>
@@ -142,31 +170,35 @@ function PortfolioLanding({state,dispatch}:{state:GameState;dispatch:(a:Action)=
             <span>00 / {text.bridgeTag}</span>
           </div>
           <div 
-            className={`bridge-blueprint drone-card ${windActive ? "is-windy" : ""}`}
+            className={`intro-console bridge-console ${windActive ? "is-windy" : ""}`}
             onClick={triggerWind}
             role="button"
             tabIndex={0}
             onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { triggerWind(); } }}
             aria-label={es ? "Simulador de dron: interacción entre software y hardware. Tocar para inducir viento." : "Drone simulator: software and hardware interaction. Click to induce wind."}
           >
-            <div className="blueprint-header">
-              <div className="blueprint-title">
+            <div className="console-top bridge-console-top">
+              <div className="console-top-title">
                 <span className="live-dot" />
-                <b>{text.droneTitle}</b>
-                <span className="blueprint-mode-tag">{text.droneSub}</span>
+                <b>{text.droneTopTag}</b>
               </div>
-              <div className="blueprint-header-actions">
-                <span className="blueprint-freq">{windActive ? (es ? "VIENTO ACTIVO" : "WIND GUST") : (es ? "BALANCE" : "BALANCED")}</span>
-                <span className="blueprint-badge">{text.droneLive}</span>
+              <div className="console-top-status">
+                <i className={windActive ? "val-amber" : "val-green"}>
+                  {windActive ? text.droneStatusWind : text.droneStatusNormal}
+                </i>
               </div>
             </div>
 
             <div className="drone-sim-stage">
               {windActive && <div className="wind-gust" aria-hidden="true" />}
               
-              <svg className="drone-arms-svg" viewBox="0 0 280 140" preserveAspectRatio="none" aria-hidden="true">
-                <line x1="45" y1="28" x2="235" y2="112" className="drone-arm" />
-                <line x1="235" y1="28" x2="45" y2="112" className="drone-arm" />
+              <svg className="drone-arms-svg" viewBox="0 0 300 150" preserveAspectRatio="none" aria-hidden="true">
+                <line x1="50" y1="30" x2="250" y2="120" className="drone-arm" />
+                <line x1="250" y1="30" x2="50" y2="120" className="drone-arm" />
+                <line x1="150" y1="75" x2="50" y2="30" className={`signal-bus ${windActive ? "surging" : ""}`} />
+                <line x1="150" y1="75" x2="250" y2="30" className={`signal-bus ${windActive ? "surging" : ""}`} />
+                <line x1="150" y1="75" x2="50" y2="120" className={`signal-bus ${windActive ? "surging" : ""}`} />
+                <line x1="150" y1="75" x2="250" y2="120" className={`signal-bus ${windActive ? "surging" : ""}`} />
               </svg>
 
               {/* Motor 1: Front-Left (CW) */}
@@ -175,7 +207,7 @@ function PortfolioLanding({state,dispatch}:{state:GameState;dispatch:(a:Action)=
                   <span className="rotor-blade" />
                 </div>
                 <div className="motor-hud">
-                  <b>MOTOR 01</b>
+                  <b>M1</b>
                   <span className="motor-pct">{droneMotors.m1}%</span>
                 </div>
               </div>
@@ -186,7 +218,7 @@ function PortfolioLanding({state,dispatch}:{state:GameState;dispatch:(a:Action)=
                   <span className="rotor-blade" />
                 </div>
                 <div className="motor-hud">
-                  <b>MOTOR 02</b>
+                  <b>M2</b>
                   <span className="motor-pct">{droneMotors.m2}%</span>
                 </div>
               </div>
@@ -197,8 +229,10 @@ function PortfolioLanding({state,dispatch}:{state:GameState;dispatch:(a:Action)=
                   <div className="gimbal-horizon" />
                   <div className="gimbal-reticle" />
                 </div>
-                <b>{text.droneHubTitle}</b>
-                <small>{windActive ? text.droneHubWind : text.droneHubNormal}</small>
+                <div className="hub-readout">
+                  <b>{text.droneHubLabel}</b>
+                  <small>{windActive ? text.droneHubWind : text.droneHubNormal}</small>
+                </div>
               </div>
 
               {/* Motor 3: Rear-Left (CCW) */}
@@ -207,7 +241,7 @@ function PortfolioLanding({state,dispatch}:{state:GameState;dispatch:(a:Action)=
                   <span className="rotor-blade" />
                 </div>
                 <div className="motor-hud">
-                  <b>MOTOR 03</b>
+                  <b>M3</b>
                   <span className="motor-pct">{droneMotors.m3}%</span>
                 </div>
               </div>
@@ -218,50 +252,48 @@ function PortfolioLanding({state,dispatch}:{state:GameState;dispatch:(a:Action)=
                   <span className="rotor-blade" />
                 </div>
                 <div className="motor-hud">
-                  <b>MOTOR 04</b>
+                  <b>M4</b>
                   <span className="motor-pct">{droneMotors.m4}%</span>
                 </div>
               </div>
             </div>
 
-            <div className="blueprint-telemetry">
-              <div className="telemetry-item">
-                <span className="telemetry-label">{text.droneSoftwareLabel}</span>
-                <b className="telemetry-val">{windActive ? text.droneSoftwareWind : text.droneSoftwareNormal}</b>
-              </div>
-              <div className="telemetry-item">
-                <span className="telemetry-label">{text.droneHardwareLabel}</span>
-                <b className="telemetry-val val-gold">{windActive ? text.droneHardwareWind : text.droneHardwareNormal}</b>
-              </div>
-              <div className="telemetry-item">
-                <span className="telemetry-label">{text.droneStatusLabel}</span>
-                <b className={`telemetry-val ${windActive ? "val-gold" : "val-green"}`}>
+            <p className="bridge-card-quote">“{text.droneCardQuote}”</p>
+
+            <div className="console-metrics bridge-metrics">
+              <span>
+                <small>{text.droneSoftwareLabel}</small>
+                <b>{windActive ? text.droneSoftwareWind : text.droneSoftwareNormal}</b>
+                <em>{windActive ? text.droneSoftwareSubWind : text.droneSoftwareSubNormal}</em>
+              </span>
+              <span>
+                <small>{text.droneHardwareLabel}</small>
+                <b className="val-gold">{windActive ? text.droneHardwareWind : text.droneHardwareNormal}</b>
+                <em>{windActive ? text.droneHardwareSubWind : text.droneHardwareSubNormal}</em>
+              </span>
+              <span>
+                <small>{text.droneStatusLabel}</small>
+                <b className={windActive ? "val-amber" : "val-green"}>
                   <i className="status-ping" />
                   {windActive ? text.droneCorrecting : text.droneStable}
                 </b>
-              </div>
+                <em>{windActive ? text.droneStatusSubWind : text.droneStatusSubNormal}</em>
+              </span>
             </div>
 
-            <div className="blueprint-specs">
-              <div className="spec-row">
-                <span className="spec-bullet">↳</span>
-                <div>
-                  <strong>{text.droneSpec1Title}:</strong>
-                  <p>{text.droneSpec1Text}</p>
-                </div>
-              </div>
-              <div className="spec-row">
-                <span className="spec-bullet">↳</span>
-                <div>
-                  <strong>{text.droneSpec2Title}:</strong>
-                  <p>{text.droneSpec2Text}</p>
-                </div>
-              </div>
+            <div className="bridge-card-footer">
+              <button 
+                type="button" 
+                className="bridge-sim-btn"
+                onClick={(e) => { e.stopPropagation(); triggerWind(); }}
+                disabled={windActive}
+              >
+                <Wind size={14} />
+                <span>{windActive ? text.droneCtaWind : text.droneCtaNormal}</span>
+              </button>
             </div>
 
-            <div className="blueprint-hint">
-              <span>{text.droneHint}</span>
-            </div>
+            <div className="console-line" />
           </div>
           <div className="bridge-editorial">
             <h2 id="bridge-title">{text.bridgeTitle}</h2>
@@ -283,7 +315,7 @@ function PortfolioLanding({state,dispatch}:{state:GameState;dispatch:(a:Action)=
       </section>
       <section className="expertise-section" id="expertise"><div className="section-heading inverse"><div><span>02 / {text.expertise}</span><h2>{text.expertiseTitle}</h2></div><p>{es?"Trabajo entre disciplinas sin perder rigor técnico ni claridad de producto.":"I work across disciplines without losing technical rigor or product clarity."}</p></div><div className="expertise-grid">{expertise.map(([number,title,description])=><article key={number}><span>{number}</span><h3>{title}</h3><p>{description}</p></article>)}</div></section>
       <section className="process-section"><div><span>03 / {text.process}</span><h2>{text.processTitle}</h2></div><ol>{(es?[["01","Explorar","Entender el problema, las restricciones y la experiencia deseada."],["02","Diseñar","Convertir incertidumbre en arquitectura y decisiones comprobables."],["03","Construir","Integrar software, modelos y hardware en un producto coherente."],["04","Validar","Medir, iterar y documentar para que el sistema pueda crecer."]]:[["01","Explore","Understand the problem, constraints, and intended experience."],["02","Design","Turn uncertainty into architecture and testable decisions."],["03","Build","Integrate software, models, and hardware into a coherent product."],["04","Validate","Measure, iterate, and document so the system can grow."]]).map(([n,title,description])=><li key={n}><span>{n}</span><b>{title}</b><p>{description}</p></li>)}</ol></section>
-      <section className="game-feature" id="game"><div className="game-feature-art" role="img" aria-label={es?"Restaurante digital Stack and Slice":"Stack and Slice digital restaurant"}><span>PORTFOLIO GAME</span></div><div className="game-feature-copy"><span>{text.gameTag}</span><h2>{text.gameTitle}</h2><p>{text.gameText}</p><small>{text.gameAside}</small><button onClick={()=>window.location.href="/game"}><Play/>{text.gameCta}<ArrowRight/></button></div></section>
+      <section className="game-feature" id="game"><div className="game-feature-art" role="img" aria-label={es?"Restaurante digital Stack and Slice":"Stack and Slice digital restaurant"}><span>PORTFOLIO GAME</span></div><div className="game-feature-copy"><span>{text.gameTag}</span><h2>{text.gameTitle}</h2><p>{text.gameText}</p><small>{text.gameAside}</small><Link className="game-feature-cta" href="/game/"><Play/>{text.gameCta}<ArrowRight/></Link></div></section>
       <section className="contact-section" id="contact"><span>{text.contactTag}</span><h2>{text.contactTitle}</h2><div><a className="contact-primary" href="mailto:ignacio.schwindt.dev@gmail.com"><Contact/>{text.write}</a><a href="https://github.com/igna-s" target="_blank" rel="noreferrer"><GitBranch/>GitHub</a><a href="https://www.linkedin.com/in/ignacio-andres-schwindt" target="_blank" rel="noreferrer"><Globe2/>LinkedIn</a></div><a className="contact-email" href="mailto:ignacio.schwindt.dev@gmail.com">ignacio.schwindt.dev@gmail.com</a></section>
     </main>
     <footer className="site-footer"><a className="site-brand" href="#top"><span>IS</span><b>IGNACIO SCHWINDT</b></a><p>{text.built}</p><span>© {new Date().getFullYear()}</span></footer>
@@ -292,10 +324,10 @@ function PortfolioLanding({state,dispatch}:{state:GameState;dispatch:(a:Action)=
 
 function GameMenu({state,dispatch,hasSave}:{state:GameState;dispatch:(a:Action)=>void;hasSave:boolean}){
   const t=copy[state.language];const[panel,setPanel]=useState<"none"|"settings"|"credits">("none");const levels=[{index:0,number:"01",es:"Inteligencia aplicada",en:"Applied intelligence",icon:"AI"},{index:3,number:"02",es:"Sistemas desde cero",en:"Systems from scratch",icon:"SYS"},{index:5,number:"03",es:"Mundo físico",en:"Physical world",icon:"HW"}];
-  return <main className="title-screen"><div className="facade" aria-hidden="true"/><div className="title-shade" aria-hidden="true"/><header className="title-topbar"><span><ChefHat/> IGNACIO&apos;S DEV PIZZERIA</span><div className="lang-switch" aria-label={t.language}><button className={state.language==="es"?"active":""} onClick={()=>dispatch({type:"LANG",language:"es"})}>ES</button><button className={state.language==="en"?"active":""} onClick={()=>dispatch({type:"LANG",language:"en"})}>EN</button></div></header><section className="title-card"><div className="sign-logo"><small>IGNACIO&apos;S</small><h1>STACK <em>&amp;</em> SLICE</h1><span>DEV PIZZERIA · PORTFOLIO GAME</span></div><p className="premise">“{t.premise}”</p><p className="title-note">{t.homeNote}</p><div className="title-actions"><button className="button-primary" onClick={()=>dispatch({type:"START"})}><Play/>{t.play}<ArrowRight/></button><div className={`secondary-actions ${hasSave?"has-save":""}`}>{hasSave&&<button onClick={()=>{const stored=localStorage.getItem(SAVE_KEY);if(stored)dispatch({type:"RESUME",state:JSON.parse(stored)})}}><Clock3/>{t.resume}</button>}<button onClick={()=>dispatch({type:"PORTFOLIO"})}><Sparkles/>{t.portfolio}</button><button onClick={()=>setPanel("settings")}><Settings/>{t.settings}</button></div></div></section><aside className="level-panel"><div className="panel-label"><span>{t.selectLevel}</span><b>{String(levels.findIndex(level=>level.index===state.recipeIndex)+1).padStart(2,"0")}/03</b></div><div className="level-list">{levels.map(level=><button key={level.index} className={state.recipeIndex===level.index?"active":""} onClick={()=>dispatch({type:"SELECT_LEVEL",index:level.index})}><span>{level.number}</span><i>{level.icon}</i><b>{state.language==="es"?level.es:level.en}</b><small>{RECIPES[level.index].project}</small><Check/></button>)}</div><div className="pace-label">{t.selectPace}</div><div className="pace-switch">{(Object.keys(DIFFICULTIES) as DifficultyKey[]).map(key=><button key={key} className={state.difficulty===key?"active":""} onClick={()=>dispatch({type:"DIFFICULTY",difficulty:key})}>{DIFFICULTIES[key].label}</button>)}</div><button className="credits-link" onClick={()=>setPanel("credits")}><CircleHelp/>{t.credits}</button></aside>{panel!=="none"&&<div className="modal-backdrop"><section className="small-modal"><button className="modal-close" onClick={()=>setPanel("none")} aria-label="Close"><X/></button>{panel==="settings"?<><span className="eyebrow">{t.settings}</span><h2>{state.language.toUpperCase()} / {state.sound?"SFX ON":"SFX OFF"}</h2><div className="setting-row"><Languages/><span>{t.language}</span><button onClick={()=>dispatch({type:"LANG",language:state.language==="es"?"en":"es"})}>{state.language==="es"?"English":"Español"}</button></div><div className="setting-row">{state.sound?<Volume2/>:<VolumeX/>}<span>{t.sound}</span><button onClick={()=>dispatch({type:"TOGGLE_SOUND"})}>{state.sound?"ON":"OFF"}</button></div></>:<><span className="eyebrow">{t.credits}</span><h2>Stack &amp; Slice</h2><p>{t.made}. Diseñado y desarrollado por Ignacio Schwindt.</p><a href="mailto:ignacio.schwindt.dev@gmail.com">ignacio.schwindt.dev@gmail.com</a></>}</section></div>}</main>
+  return <main className="title-screen"><div className="facade" aria-hidden="true"/><div className="title-shade" aria-hidden="true"/><header className="title-topbar"><button className="title-back-home" onClick={()=>dispatch({type:"HOME"})} title={t.backHome}><ArrowLeft/><span>{t.backHome}</span></button><span className="title-brand-badge"><ChefHat/> IGNACIO&apos;S DEV PIZZERIA</span><div className="lang-switch" aria-label={t.language}><button className={state.language==="es"?"active":""} onClick={()=>dispatch({type:"LANG",language:"es"})}>ES</button><button className={state.language==="en"?"active":""} onClick={()=>dispatch({type:"LANG",language:"en"})}>EN</button></div></header><section className="title-card"><div className="sign-logo"><small>IGNACIO&apos;S</small><h1>STACK <em>&amp;</em> SLICE</h1><span>DEV PIZZERIA · PORTFOLIO GAME</span></div><p className="premise">“{t.premise}”</p><p className="title-note">{t.homeNote}</p><div className="title-actions"><button className="button-primary" onClick={()=>dispatch({type:"START"})}><Play/>{t.play}<ArrowRight/></button><div className={`secondary-actions ${hasSave?"has-save":""}`}>{hasSave&&<button onClick={()=>{const stored=localStorage.getItem(SAVE_KEY);if(stored)dispatch({type:"RESUME",state:JSON.parse(stored)})}}><Clock3/>{t.resume}</button>}<button onClick={()=>dispatch({type:"PORTFOLIO"})}><Sparkles/>{t.portfolio}</button><button onClick={()=>setPanel("settings")}><Settings/>{t.settings}</button></div></div></section><aside className="level-panel"><div className="panel-label"><span>{t.selectLevel}</span><b>{String(levels.findIndex(level=>level.index===state.recipeIndex)+1).padStart(2,"0")}/03</b></div><div className="level-list">{levels.map(level=><button key={level.index} className={state.recipeIndex===level.index?"active":""} onClick={()=>dispatch({type:"SELECT_LEVEL",index:level.index})}><span>{level.number}</span><i>{level.icon}</i><b>{state.language==="es"?level.es:level.en}</b><small>{RECIPES[level.index].project}</small><Check/></button>)}</div><div className="pace-label">{t.selectPace}</div><div className="pace-switch">{(Object.keys(DIFFICULTIES) as DifficultyKey[]).map(key=><button key={key} className={state.difficulty===key?"active":""} onClick={()=>dispatch({type:"DIFFICULTY",difficulty:key})}>{DIFFICULTIES[key].label}</button>)}</div><button className="credits-link" onClick={()=>setPanel("credits")}><CircleHelp/>{t.credits}</button></aside>{panel!=="none"&&<div className="modal-backdrop"><section className="small-modal"><button className="modal-close" onClick={()=>setPanel("none")} aria-label="Close"><X/></button>{panel==="settings"?<><span className="eyebrow">{t.settings}</span><h2>{state.language.toUpperCase()} / {state.sound?"SFX ON":"SFX OFF"}</h2><div className="setting-row"><Languages/><span>{t.language}</span><button onClick={()=>dispatch({type:"LANG",language:state.language==="es"?"en":"es"})}>{state.language==="es"?"English":"Español"}</button></div><div className="setting-row">{state.sound?<Volume2/>:<VolumeX/>}<span>{t.sound}</span><button onClick={()=>dispatch({type:"TOGGLE_SOUND"})}>{state.sound?"ON":"OFF"}</button></div></>:<><span className="eyebrow">{t.credits}</span><h2>Stack &amp; Slice</h2><p>{t.made}. Diseñado y desarrollado por Ignacio Schwindt.</p><a href="mailto:ignacio.schwindt.dev@gmail.com">ignacio.schwindt.dev@gmail.com</a></>}</section></div>}</main>
 }
 
-function Portfolio({state,dispatch}:{state:GameState;dispatch:(a:Action)=>void}){const t=copy[state.language];return <main className="portfolio-screen"><header className="portfolio-header"><button onClick={()=>dispatch({type:"CLOSE_PORTFOLIO"})}><ArrowLeft/>{t.back}</button><div><small>STACK &amp; SLICE</small><b>IGNACIO SCHWINDT · COMPUTER ENGINEER</b></div><div className="portfolio-social"><a href="https://github.com/igna-s"><GitBranch/></a><a href="https://www.linkedin.com/in/ignacio-andres-schwindt"><Contact/></a></div></header><section className="portfolio-hero"><span>QUICK PORTFOLIO / NO GAMEPLAY REQUIRED</span><h1>{t.projects}</h1><p>{t.premise}</p></section><section className="portfolio-grid">{RECIPES.map((recipe,index)=><article key={recipe.id}><div className="project-index">{String(index+1).padStart(2,"0")}<span>{recipe.year}</span></div><small>{state.language==="es"?recipe.subtitle:recipe.subtitleEn}</small><h2>{recipe.project}</h2><p>{state.language==="es"?recipe.description:recipe.descriptionEn}</p><div>{recipe.ingredientIds.map(id=><span key={id} style={{"--dot":ingredientById.get(id)!.color} as CSSProperties}>{ingredientById.get(id)!.name}</span>)}</div><a href={recipe.repo} target="_blank" rel="noreferrer">{t.viewCode}<ArrowRight/></a></article>)}</section><section className="stack-marquee"><span>{t.stack}</span>{INGREDIENTS.map(item=><b key={item.id}>{item.name}</b>)}</section></main>}
+function Portfolio({state,dispatch}:{state:GameState;dispatch:(a:Action)=>void}){const t=copy[state.language];return <main className="portfolio-screen"><header className="portfolio-header"><div className="portfolio-header-nav"><button onClick={()=>dispatch({type:"CLOSE_PORTFOLIO"})}><ArrowLeft/>{t.back}</button><button className="portfolio-home-pill" onClick={()=>dispatch({type:"HOME"})}><ChefHat size={14}/><span>{t.backHome}</span></button></div><div><small>STACK &amp; SLICE</small><b>IGNACIO SCHWINDT · COMPUTER ENGINEER</b></div><div className="portfolio-social"><a href="https://github.com/igna-s"><GitBranch/></a><a href="https://www.linkedin.com/in/ignacio-andres-schwindt"><Contact/></a></div></header><section className="portfolio-hero"><span>QUICK PORTFOLIO / NO GAMEPLAY REQUIRED</span><h1>{t.projects}</h1><p>{t.premise}</p></section><section className="portfolio-grid">{RECIPES.map((recipe,index)=><article key={recipe.id}><div className="project-index">{String(index+1).padStart(2,"0")}<span>{recipe.year}</span></div><small>{state.language==="es"?recipe.subtitle:recipe.subtitleEn}</small><h2>{recipe.project}</h2><p>{state.language==="es"?recipe.description:recipe.descriptionEn}</p><div>{recipe.ingredientIds.map(id=><span key={id} style={{"--dot":ingredientById.get(id)!.color} as CSSProperties}>{ingredientById.get(id)!.name}</span>)}</div><a href={recipe.repo} target="_blank" rel="noreferrer">{t.viewCode}<ArrowRight/></a></article>)}</section><section className="stack-marquee"><span>{t.stack}</span>{INGREDIENTS.map(item=><b key={item.id}>{item.name}</b>)}</section></main>}
 
 // Kept as a compatibility fallback while saved v3 sessions migrate to the concurrent kitchen.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
