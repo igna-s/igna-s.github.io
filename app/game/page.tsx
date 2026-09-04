@@ -28,7 +28,9 @@ export function GameMenu({ state, dispatch, hasSave }: { state: GameState; dispa
       <div className="title-shade" aria-hidden="true" />
       <header className="title-topbar">
         <Link href="/" className="title-back-home" title={t.backHome}>
-          <ArrowLeft /> <span>{t.backHome}</span>
+          <ArrowLeft />
+          <span className="back-full">{t.backHome}</span>
+          <span className="back-short">Portfolio</span>
         </Link>
         <span className="title-brand-badge">
           <ChefHat /> <span>IGNACIO&apos;S DEV PIZZERIA</span>
@@ -165,9 +167,10 @@ export function Portfolio({ state, dispatch }: { state: GameState; dispatch: (a:
             <ArrowLeft />
             {t.back}
           </button>
-          <Link href="/" className="portfolio-home-pill">
+          <Link href="/" className="portfolio-home-pill" title={t.backHome}>
             <ChefHat size={14} />
-            <span>{t.backHome}</span>
+            <span className="back-full">{t.backHome}</span>
+            <span className="back-short">Portfolio</span>
           </Link>
         </div>
         <div>
