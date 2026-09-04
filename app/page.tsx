@@ -45,23 +45,108 @@ const projectCategories: Record<string, Exclude<ProjectFilter,"all">> = {
   meridian:"ai", embedded:"systems", multitouch:"interactive", arcade:"interactive",
 };
 
+type DroneSimState = "unleveled" | "leveling" | "leveled" | "disturbed";
+
 function PortfolioLanding({state,dispatch}:{state:GameState;dispatch:(a:Action)=>void}){
   const [filter,setFilter]=useState<ProjectFilter>("all");
+  const [droneState,setDroneState]=useState<DroneSimState>("unleveled");
+  const [droneTilt,setDroneTilt]=useState<number>(-7.5);
+  const [consoleTilt,setConsoleTilt]=useState<number>(-1.5);
+  const [droneMotors,setDroneMotors]=useState({m1:94,m2:63,m3:89,m4:62,pitch:"-7.4°",roll:"+4.1°"});
   const [windActive,setWindActive]=useState(false);
-  const [droneMotors,setDroneMotors]=useState({m1:78,m2:76,m3:81,m4:79,pitch:"+0.2°",roll:"-0.1°"});
 
-  const triggerWind=()=>{
-    if(windActive)return;
-    setWindActive(true);
-    setDroneMotors({m1:95,m2:64,m3:89,m4:62,pitch:"+4.6°",roll:"-3.1°"});
-    setTimeout(()=>{
-      setDroneMotors({m1:82,m2:79,m3:83,m4:80,pitch:"+0.7°",roll:"-0.3°"});
-    },450);
-    setTimeout(()=>{
-      setDroneMotors({m1:78,m2:76,m3:81,m4:79,pitch:"+0.1°",roll:"0.0°"});
+  const bridgeConsoleRef=useRef<HTMLDivElement>(null);
+  const hasAutoLeveledRef=useRef<boolean>(false);
+  const timersRef=useRef<NodeJS.Timeout[]>([]);
+  const perturbDirectionRef=useRef<number>(1);
+
+  const autoLevelDrone=()=>{
+    timersRef.current.forEach(clearTimeout);
+    timersRef.current=[];
+
+    setDroneState("leveling");
+    setDroneTilt(-1.8);
+    setConsoleTilt(-0.3);
+    setDroneMotors({m1:83,m2:74,m3:82,m4:75,pitch:"-1.8°",roll:"+0.9°"});
+
+    const t=setTimeout(()=>{
+      setDroneState("leveled");
+      setDroneTilt(0);
+      setConsoleTilt(0);
+      setDroneMotors({m1:78,m2:76,m3:81,m4:79,pitch:"0.0°",roll:"0.0°"});
       setWindActive(false);
-    },950);
+    },450);
+    timersRef.current.push(t);
   };
+
+  const triggerPerturbation=()=>{
+    timersRef.current.forEach(clearTimeout);
+    timersRef.current=[];
+    hasAutoLeveledRef.current=true;
+
+    const dir=perturbDirectionRef.current;
+    perturbDirectionRef.current=-dir;
+
+    const targetTilt=dir*8.2;
+    const targetConsoleTilt=dir*1.3;
+
+    setWindActive(true);
+    setDroneState("disturbed");
+    setDroneTilt(targetTilt);
+    setConsoleTilt(targetConsoleTilt);
+
+    if(dir>0){
+      setDroneMotors({m1:62,m2:96,m3:65,m4:92,pitch:"+8.2°",roll:"-4.5°"});
+    }else{
+      setDroneMotors({m1:96,m2:62,m3:92,m4:65,pitch:"-8.2°",roll:"+4.5°"});
+    }
+
+    const t1=setTimeout(()=>{
+      setWindActive(false);
+      setDroneTilt(targetTilt*0.25);
+      setConsoleTilt(targetConsoleTilt*0.25);
+      setDroneMotors({m1:82,m2:80,m3:82,m4:79,pitch:dir>0?"+2.0°":"-2.0°",roll:"0.0°"});
+    },480);
+
+    const t2=setTimeout(()=>{
+      setDroneState("leveled");
+      setDroneTilt(0);
+      setConsoleTilt(0);
+      setDroneMotors({m1:78,m2:76,m3:81,m4:79,pitch:"0.0°",roll:"0.0°"});
+    },950);
+
+    timersRef.current.push(t1,t2);
+  };
+
+  useEffect(()=>{
+    const el=bridgeConsoleRef.current;
+    if(!el||hasAutoLeveledRef.current)return;
+
+    const observer=new IntersectionObserver(
+      (entries)=>{
+        for(const entry of entries){
+          const rect=entry.boundingClientRect;
+          const vh=window.innerHeight||document.documentElement.clientHeight;
+          const isFullyShown=(rect.top>=0&&rect.bottom<=vh+60)||entry.intersectionRatio>=0.55;
+          if(isFullyShown&&!hasAutoLeveledRef.current){
+            hasAutoLeveledRef.current=true;
+            observer.disconnect();
+            const delay=setTimeout(()=>{
+              autoLevelDrone();
+            },350);
+            timersRef.current.push(delay);
+          }
+        }
+      },
+      {threshold:[0.3,0.55,0.8,1.0]}
+    );
+
+    observer.observe(el);
+    return()=>{
+      observer.disconnect();
+      timersRef.current.forEach(clearTimeout);
+    };
+  },[]);
 
   const es=state.language==="es";
   const text=es?{
@@ -74,6 +159,7 @@ function PortfolioLanding({state,dispatch}:{state:GameState;dispatch:(a:Action)=
     droneTopTag:"00 / SISTEMA EN TIEMPO REAL",
     droneStatusNormal:"SISTEMA EN EQUILIBRIO",
     droneStatusWind:"COMPENSANDO RÁFAGA",
+    droneStatusCalib:"CORRIGIENDO BALANCE",
     droneCardQuote:"El software calcula la corrección en microsegundos; el hardware actúa en el mundo físico para mantener el equilibrio.",
     droneSoftwareLabel:"Software",
     droneSoftwareNormal:"Control de balance",
@@ -115,6 +201,7 @@ function PortfolioLanding({state,dispatch}:{state:GameState;dispatch:(a:Action)=
     droneTopTag:"00 / REAL-TIME SYSTEM",
     droneStatusNormal:"SYSTEM IN EQUILIBRIUM",
     droneStatusWind:"COMPENSATING GUST",
+    droneStatusCalib:"CORRECTING BALANCE",
     droneCardQuote:"Software computes the correction in microseconds; hardware acts in the physical world to maintain balance.",
     droneSoftwareLabel:"Software",
     droneSoftwareNormal:"Balance control",
@@ -170,12 +257,14 @@ function PortfolioLanding({state,dispatch}:{state:GameState;dispatch:(a:Action)=
             <span>00 / {text.bridgeTag}</span>
           </div>
           <div 
-            className={`intro-console bridge-console ${windActive ? "is-windy" : ""}`}
-            onClick={triggerWind}
+            ref={bridgeConsoleRef}
+            className={`bridge-console ${windActive ? "is-windy" : ""} ${droneState !== "leveled" ? "is-active-sim" : ""}`}
+            style={{ "--console-tilt": `${consoleTilt}deg` } as React.CSSProperties}
+            onClick={triggerPerturbation}
             role="button"
             tabIndex={0}
-            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { triggerWind(); } }}
-            aria-label={es ? "Simulador de dron: interacción entre software y hardware. Tocar para inducir viento." : "Drone simulator: software and hardware interaction. Click to induce wind."}
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { triggerPerturbation(); } }}
+            aria-label={es ? "Simulador de dron: interacción entre software y hardware. Tocar para desestabilizar y ver la autocorrección." : "Drone simulator: software and hardware interaction. Tap to perturb and see auto-correction."}
           >
             <div className="console-top bridge-console-top">
               <div className="console-top-title">
@@ -183,8 +272,10 @@ function PortfolioLanding({state,dispatch}:{state:GameState;dispatch:(a:Action)=
                 <b>{text.droneTopTag}</b>
               </div>
               <div className="console-top-status">
-                <i className={windActive ? "val-amber" : "val-green"}>
-                  {windActive ? text.droneStatusWind : text.droneStatusNormal}
+                <i className={droneState !== "leveled" ? "val-amber" : "val-green"}>
+                  {droneState === "disturbed" 
+                    ? text.droneStatusWind 
+                    : (droneState === "unleveled" || droneState === "leveling" ? text.droneStatusCalib : text.droneStatusNormal)}
                 </i>
               </div>
             </div>
@@ -192,68 +283,76 @@ function PortfolioLanding({state,dispatch}:{state:GameState;dispatch:(a:Action)=
             <div className="drone-sim-stage">
               {windActive && <div className="wind-gust" aria-hidden="true" />}
               
-              <svg className="drone-arms-svg" viewBox="0 0 300 150" preserveAspectRatio="none" aria-hidden="true">
-                <line x1="50" y1="30" x2="250" y2="120" className="drone-arm" />
-                <line x1="250" y1="30" x2="50" y2="120" className="drone-arm" />
-                <line x1="150" y1="75" x2="50" y2="30" className={`signal-bus ${windActive ? "surging" : ""}`} />
-                <line x1="150" y1="75" x2="250" y2="30" className={`signal-bus ${windActive ? "surging" : ""}`} />
-                <line x1="150" y1="75" x2="50" y2="120" className={`signal-bus ${windActive ? "surging" : ""}`} />
-                <line x1="150" y1="75" x2="250" y2="120" className={`signal-bus ${windActive ? "surging" : ""}`} />
-              </svg>
+              <div 
+                className="drone-airframe"
+                style={{ "--drone-tilt": `${droneTilt}deg` } as React.CSSProperties}
+              >
+                <svg className="drone-arms-svg" viewBox="0 0 300 150" preserveAspectRatio="none" aria-hidden="true">
+                  <line x1="50" y1="30" x2="250" y2="120" className="drone-arm" />
+                  <line x1="250" y1="30" x2="50" y2="120" className="drone-arm" />
+                  <line x1="150" y1="75" x2="50" y2="30" className={`signal-bus ${droneState !== "leveled" ? "surging" : ""}`} />
+                  <line x1="150" y1="75" x2="250" y2="30" className={`signal-bus ${droneState !== "leveled" ? "surging" : ""}`} />
+                  <line x1="150" y1="75" x2="50" y2="120" className={`signal-bus ${droneState !== "leveled" ? "surging" : ""}`} />
+                  <line x1="150" y1="75" x2="250" y2="120" className={`signal-bus ${droneState !== "leveled" ? "surging" : ""}`} />
+                </svg>
 
-              {/* Motor 1: Front-Left (CW) */}
-              <div className={`drone-motor motor-m1 ${windActive ? "surge-high" : ""}`}>
-                <div className="rotor-disc rotor-cw">
-                  <span className="rotor-blade" />
+                {/* Motor 1: Front-Left (CW) */}
+                <div className={`drone-motor motor-m1 ${droneTilt < -1 ? "surge-high" : (droneTilt > 1 ? "surge-low" : "")}`}>
+                  <div className="rotor-disc rotor-cw">
+                    <span className="rotor-blade" />
+                  </div>
+                  <div className="motor-hud">
+                    <b>M1</b>
+                    <span className="motor-pct">{droneMotors.m1}%</span>
+                  </div>
                 </div>
-                <div className="motor-hud">
-                  <b>M1</b>
-                  <span className="motor-pct">{droneMotors.m1}%</span>
-                </div>
-              </div>
 
-              {/* Motor 2: Front-Right (CCW) */}
-              <div className={`drone-motor motor-m2 ${windActive ? "surge-low" : ""}`}>
-                <div className="rotor-disc rotor-ccw">
-                  <span className="rotor-blade" />
+                {/* Motor 2: Front-Right (CCW) */}
+                <div className={`drone-motor motor-m2 ${droneTilt > 1 ? "surge-high" : (droneTilt < -1 ? "surge-low" : "")}`}>
+                  <div className="rotor-disc rotor-ccw">
+                    <span className="rotor-blade" />
+                  </div>
+                  <div className="motor-hud">
+                    <b>M2</b>
+                    <span className="motor-pct">{droneMotors.m2}%</span>
+                  </div>
                 </div>
-                <div className="motor-hud">
-                  <b>M2</b>
-                  <span className="motor-pct">{droneMotors.m2}%</span>
-                </div>
-              </div>
 
-              {/* Center Flight Controller */}
-              <div className={`drone-hub ${windActive ? "hub-tilted" : ""}`}>
-                <div className="hub-gimbal">
-                  <div className="gimbal-horizon" />
-                  <div className="gimbal-reticle" />
+                {/* Center Flight Controller */}
+                <div className={`drone-hub ${droneState !== "leveled" ? "hub-tilted" : ""}`}>
+                  <div className="hub-gimbal">
+                    <div 
+                      className="gimbal-horizon" 
+                      style={{ transform: `rotate(${-droneTilt * 1.6}deg)` }}
+                    />
+                    <div className="gimbal-reticle" />
+                  </div>
+                  <div className="hub-readout">
+                    <b>{text.droneHubLabel}</b>
+                    <small>{droneState !== "leveled" ? text.droneHubWind : text.droneHubNormal}</small>
+                  </div>
                 </div>
-                <div className="hub-readout">
-                  <b>{text.droneHubLabel}</b>
-                  <small>{windActive ? text.droneHubWind : text.droneHubNormal}</small>
-                </div>
-              </div>
 
-              {/* Motor 3: Rear-Left (CCW) */}
-              <div className={`drone-motor motor-m3 ${windActive ? "surge-high" : ""}`}>
-                <div className="rotor-disc rotor-ccw">
-                  <span className="rotor-blade" />
+                {/* Motor 3: Rear-Left (CCW) */}
+                <div className={`drone-motor motor-m3 ${droneTilt < -1 ? "surge-high" : (droneTilt > 1 ? "surge-low" : "")}`}>
+                  <div className="rotor-disc rotor-ccw">
+                    <span className="rotor-blade" />
+                  </div>
+                  <div className="motor-hud">
+                    <b>M3</b>
+                    <span className="motor-pct">{droneMotors.m3}%</span>
+                  </div>
                 </div>
-                <div className="motor-hud">
-                  <b>M3</b>
-                  <span className="motor-pct">{droneMotors.m3}%</span>
-                </div>
-              </div>
 
-              {/* Motor 4: Rear-Right (CW) */}
-              <div className={`drone-motor motor-m4 ${windActive ? "surge-low" : ""}`}>
-                <div className="rotor-disc rotor-cw">
-                  <span className="rotor-blade" />
-                </div>
-                <div className="motor-hud">
-                  <b>M4</b>
-                  <span className="motor-pct">{droneMotors.m4}%</span>
+                {/* Motor 4: Rear-Right (CW) */}
+                <div className={`drone-motor motor-m4 ${droneTilt > 1 ? "surge-high" : (droneTilt < -1 ? "surge-low" : "")}`}>
+                  <div className="rotor-disc rotor-cw">
+                    <span className="rotor-blade" />
+                  </div>
+                  <div className="motor-hud">
+                    <b>M4</b>
+                    <span className="motor-pct">{droneMotors.m4}%</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -263,21 +362,21 @@ function PortfolioLanding({state,dispatch}:{state:GameState;dispatch:(a:Action)=
             <div className="console-metrics bridge-metrics">
               <span>
                 <small>{text.droneSoftwareLabel}</small>
-                <b>{windActive ? text.droneSoftwareWind : text.droneSoftwareNormal}</b>
-                <em>{windActive ? text.droneSoftwareSubWind : text.droneSoftwareSubNormal}</em>
+                <b>{droneState !== "leveled" ? text.droneSoftwareWind : text.droneSoftwareNormal}</b>
+                <em>{droneState !== "leveled" ? text.droneSoftwareSubWind : text.droneSoftwareSubNormal}</em>
               </span>
               <span>
                 <small>{text.droneHardwareLabel}</small>
-                <b className="val-gold">{windActive ? text.droneHardwareWind : text.droneHardwareNormal}</b>
-                <em>{windActive ? text.droneHardwareSubWind : text.droneHardwareSubNormal}</em>
+                <b className="val-gold">{droneState !== "leveled" ? text.droneHardwareWind : text.droneHardwareNormal}</b>
+                <em>{droneState !== "leveled" ? text.droneHardwareSubWind : text.droneHardwareSubNormal}</em>
               </span>
               <span>
                 <small>{text.droneStatusLabel}</small>
-                <b className={windActive ? "val-amber" : "val-green"}>
+                <b className={droneState !== "leveled" ? "val-amber" : "val-green"}>
                   <i className="status-ping" />
-                  {windActive ? text.droneCorrecting : text.droneStable}
+                  {droneState !== "leveled" ? text.droneCorrecting : text.droneStable}
                 </b>
-                <em>{windActive ? text.droneStatusSubWind : text.droneStatusSubNormal}</em>
+                <em>{droneState !== "leveled" ? `${es ? "Inclinación " : "Tilt angle "}${droneMotors.pitch}` : text.droneStatusSubNormal}</em>
               </span>
             </div>
 
@@ -285,11 +384,11 @@ function PortfolioLanding({state,dispatch}:{state:GameState;dispatch:(a:Action)=
               <button 
                 type="button" 
                 className="bridge-sim-btn"
-                onClick={(e) => { e.stopPropagation(); triggerWind(); }}
-                disabled={windActive}
+                onClick={(e) => { e.stopPropagation(); triggerPerturbation(); }}
+                aria-label={droneState !== "leveled" ? text.droneCtaWind : text.droneCtaNormal}
               >
                 <Wind size={14} />
-                <span>{windActive ? text.droneCtaWind : text.droneCtaNormal}</span>
+                <span>{droneState !== "leveled" ? text.droneCtaWind : text.droneCtaNormal}</span>
               </button>
             </div>
 
